@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 862 738" font-family="system-ui,-apple-system,BlinkMacSystemFont,sans-serif">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="ahid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-8%" width="110%" height="124%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0000001a"/>
+    </filter>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="862" height="738" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="400" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a" letter-spacing="-0.2">Project Ventana — Architecture Overview</text>
+
+  <!-- ═══════════════════════════════════════════════
+       DEVELOPER IDENTITY SCOPE — right-side column
+  ═══════════════════════════════════════════════ -->
+  <rect x="802" y="196" width="54" height="534" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+  <!-- Identity column label -->
+  <text x="826" y="463" text-anchor="middle" font-size="10" font-weight="700" fill="#92400e"
+        transform="rotate(-90 826 463)" letter-spacing="0.3">Developer Identity</text>
+
+  <!-- Scope brackets — top and bottom ticks -->
+  <line x1="802" y1="252" x2="796" y2="252" stroke="#f59e0b" stroke-width="1.5"/>
+  <line x1="802" y1="590" x2="796" y2="590" stroke="#f59e0b" stroke-width="1.5"/>
+
+  <!-- Identity flow arrow inside column -->
+  <line x1="849" y1="272" x2="849" y2="574" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#ahid)"/>
+
+  <!-- Top annotation: MCP Server -->
+  <text x="839" y="258" text-anchor="middle" font-size="7" fill="#b45309"
+        transform="rotate(-90 839 258)">MCP requests</text>
+
+  <!-- Bottom annotation: KB -->
+  <text x="839" y="590" text-anchor="middle" font-size="7" fill="#b45309"
+        transform="rotate(-90 839 590)">Reader access enforced</text>
+
+  <!-- ═══════════════════════════════════════════════
+       CLIENT — DEVELOPER WORKSTATION
+  ═══════════════════════════════════════════════ -->
+  <rect x="16" y="42" width="768" height="280" rx="14" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <!-- client/ badge pill -->
+  <rect x="16" y="42" width="62" height="21" rx="7" fill="#7c3aed"/>
+  <text x="47" y="57" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff" letter-spacing="0.5">client/</text>
+  <text x="88" y="57" font-size="9" font-weight="700" fill="#7c3aed" letter-spacing="1.5">DEVELOPER WORKSTATION</text>
+
+  <!-- IDE -->
+  <rect x="30" y="68" width="154" height="92" rx="10" fill="#1e3a8a" filter="url(#shadow)"/>
+  <text x="107" y="95" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">IDE</text>
+  <text x="107" y="113" text-anchor="middle" font-size="9.5" fill="#bfdbfe">mcp.json</text>
+  <text x="107" y="130" text-anchor="middle" font-size="9.5" fill="#bfdbfe">workspace instructions</text>
+
+  <!-- IDE ↔ LLM Agent -->
+  <line x1="184" y1="114" x2="294" y2="114" stroke="#a5b4fc" stroke-width="1.5" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- LLM Agent -->
+  <rect x="294" y="68" width="212" height="92" rx="10" fill="#3b0764" filter="url(#shadow)"/>
+  <text x="400" y="95" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">LLM Agent</text>
+  <text x="400" y="113" text-anchor="middle" font-size="9.5" fill="#ddd6fe">Grounded by KB context</text>
+  <text x="400" y="130" text-anchor="middle" font-size="9.5" fill="#ddd6fe">Priority: KB → trained data</text>
+
+  <!-- LLM Agent ↔ Local Context -->
+  <line x1="506" y1="114" x2="616" y2="114" stroke="#34d399" stroke-width="1.5" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- Local Context -->
+  <rect x="616" y="68" width="154" height="92" rx="10" fill="#064e3b" filter="url(#shadow)"/>
+  <text x="693" y="95" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">Local Context</text>
+  <text x="693" y="113" text-anchor="middle" font-size="9.5" fill="#6ee7b7">Dev-owned files</text>
+  <text x="693" y="130" text-anchor="middle" font-size="9.5" fill="#6ee7b7">No PR required</text>
+
+  <!-- stdio label + arrow down -->
+  <line x1="400" y1="160" x2="400" y2="200" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ah)"/>
+  <rect x="362" y="172" width="76" height="16" rx="4" fill="#ede9fe"/>
+  <text x="400" y="184" text-anchor="middle" font-size="9" font-weight="600" fill="#5b21b6">stdio</text>
+
+  <!-- MCP Server -->
+  <rect x="284" y="200" width="232" height="100" rx="10" fill="#4f46e5" filter="url(#shadow)"/>
+  <text x="400" y="228" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">MCP Server</text>
+  <text x="400" y="246" text-anchor="middle" font-size="9.5" fill="#c7d2fe">Node.js · Python · stdio</text>
+  <text x="400" y="263" text-anchor="middle" font-size="9.5" fill="#c7d2fe">Tools:  list  ·  read</text>
+  <text x="400" y="279" text-anchor="middle" font-size="8.5" fill="#a5b4fc" font-style="italic">operates as developer identity</text>
+  <text x="400" y="292" text-anchor="middle" font-size="8" fill="#818cf8">client/onboarding/workspace/</text>
+
+  <!-- MCP Server → Auth Protocol (crosses workstation boundary) -->
+  <line x1="400" y1="300" x2="400" y2="356" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ah)"/>
+
+  <!-- ═══════════════════════════════════════════════
+       AUTHENTICATION PROTOCOL
+  ═══════════════════════════════════════════════ -->
+  <rect x="108" y="356" width="584" height="96" rx="10" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="400" y="377" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0369a1" letter-spacing="0.4">Authentication Protocol</text>
+
+  <!-- Chip 1: Credential Store -->
+  <rect x="122" y="390" width="152" height="40" rx="6" fill="#0369a1"/>
+  <text x="198" y="414" text-anchor="middle" font-size="9.5" fill="#fff">Credential Store</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="274" y1="410" x2="302" y2="410" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <!-- Chip 2: Identity Provider -->
+  <rect x="302" y="390" width="196" height="40" rx="6" fill="#0369a1"/>
+  <text x="400" y="414" text-anchor="middle" font-size="9.5" fill="#fff">Identity Provider · OAuth · OIDC</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="498" y1="410" x2="526" y2="410" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#ah)"/>
+
+  <!-- Chip 3: Git Host + RBAC -->
+  <rect x="526" y="390" width="152" height="40" rx="6" fill="#0369a1"/>
+  <text x="602" y="406" text-anchor="middle" font-size="9.5" fill="#fff">Git Host · REST API</text>
+  <text x="602" y="422" text-anchor="middle" font-size="8" fill="#bae6fd" font-style="italic">identity → Reader access enforced</text>
+
+  <!-- Auth Protocol → Server box -->
+  <line x1="400" y1="452" x2="400" y2="478" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ah)"/>
+
+  <!-- ═══════════════════════════════════════════════
+       SERVER — KNOWLEDGE BASE / GIT REPOSITORY
+  ═══════════════════════════════════════════════ -->
+  <rect x="16" y="478" width="768" height="246" rx="14" fill="#0c1632" stroke="#4338ca" stroke-width="1.5"/>
+  <!-- server/ badge pill -->
+  <rect x="16" y="478" width="62" height="21" rx="7" fill="#4338ca"/>
+  <text x="47" y="493" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff" letter-spacing="0.5">server/</text>
+
+  <text x="400" y="506" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Knowledge Base  ·  Git Repository</text>
+  <text x="400" y="522" text-anchor="middle" font-size="8.5" fill="#475569" font-style="italic">Any Git host  ·  accessed over HTTPS  ·  no local clone required</text>
+
+  <!-- Global INDEX chip -->
+  <rect x="34" y="532" width="114" height="38" rx="7" fill="#1d4ed8"/>
+  <text x="91" y="549" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">INDEX.md</text>
+  <text x="91" y="563" text-anchor="middle" font-size="8.5" fill="#bfdbfe">Global root</text>
+
+  <!-- Global RULES chip -->
+  <rect x="162" y="532" width="114" height="38" rx="7" fill="#1d4ed8"/>
+  <text x="219" y="549" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">RULES.md</text>
+  <text x="219" y="563" text-anchor="middle" font-size="8.5" fill="#bfdbfe">Global root</text>
+
+  <!-- Recursive note -->
+  <text x="560" y="552" text-anchor="middle" font-size="8.5" fill="#475569" font-style="italic">index + rules at every layer  (recursive)</text>
+
+  <!-- Domain A -->
+  <rect x="34" y="580" width="222" height="130" rx="8" fill="#162044"/>
+  <text x="145" y="600" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">Domain A</text>
+  <rect x="42" y="607" width="90" height="26" rx="5" fill="#1e40af"/>
+  <text x="87" y="625" text-anchor="middle" font-size="9" fill="#fff">index</text>
+  <rect x="142" y="607" width="90" height="26" rx="5" fill="#1e40af"/>
+  <text x="187" y="625" text-anchor="middle" font-size="9" fill="#fff">rules</text>
+  <rect x="42" y="641" width="190" height="24" rx="5" fill="#162044" stroke="#3b82f6" stroke-width="0.75"/>
+  <text x="137" y="658" text-anchor="middle" font-size="8.5" fill="#93c5fd">subdomain/  (index + rules)</text>
+  <rect x="42" y="672" width="190" height="22" rx="5" fill="#162044" stroke="#334155" stroke-width="0.75" stroke-dasharray="3,2"/>
+  <text x="137" y="687" text-anchor="middle" font-size="8.5" fill="#475569">subdomain/subdomain/ …</text>
+
+  <!-- Domain B -->
+  <rect x="272" y="580" width="222" height="130" rx="8" fill="#162044"/>
+  <text x="383" y="600" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">Domain B</text>
+  <rect x="280" y="607" width="90" height="26" rx="5" fill="#1e40af"/>
+  <text x="325" y="625" text-anchor="middle" font-size="9" fill="#fff">index</text>
+  <rect x="380" y="607" width="90" height="26" rx="5" fill="#1e40af"/>
+  <text x="425" y="625" text-anchor="middle" font-size="9" fill="#fff">rules</text>
+  <rect x="280" y="641" width="190" height="24" rx="5" fill="#162044" stroke="#3b82f6" stroke-width="0.75"/>
+  <text x="375" y="658" text-anchor="middle" font-size="8.5" fill="#93c5fd">subdomain/  (index + rules)</text>
+  <rect x="280" y="672" width="190" height="22" rx="5" fill="#162044" stroke="#334155" stroke-width="0.75" stroke-dasharray="3,2"/>
+  <text x="375" y="687" text-anchor="middle" font-size="8.5" fill="#475569">subdomain/subdomain/ …</text>
+
+  <!-- Domain N placeholder -->
+  <rect x="510" y="580" width="260" height="130" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="640" y="624" text-anchor="middle" font-size="10.5" fill="#334155" font-style="italic">Domain N …</text>
+  <text x="640" y="646" text-anchor="middle" font-size="9.5" fill="#1e293b">Same recursive pattern</text>
+  <text x="640" y="664" text-anchor="middle" font-size="9.5" fill="#1e293b">index + rules at every layer</text>
+</svg>
