@@ -4,6 +4,10 @@ A proven agentic workflow framework that connects LLM agents to a shared enterpr
 
 Presented by **[Matt Borja](https://linkedin.com/in/mattborja)** at **ACCTC 2026**, hosted by **Pima Community College**, week of June 22nd, 2026.
 
+> **Enabling an AI-Powered Workforce to Achieve Maximum Productivity**
+> 
+> Demonstration of a proven, viable workflow that exploits the agentic capabilities of AI to accelerate teams in their research, development, and release of technical solutions at scale.
+
 ![GitHub Repository QR Code](qrcode-github.png)
 
 ---
