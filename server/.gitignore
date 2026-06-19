@@ -1,0 +1,6 @@
+# OS / editor artifacts — keep the knowledge base content clean
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+*.swp
