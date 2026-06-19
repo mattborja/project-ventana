@@ -2,7 +2,7 @@
 
 A proven agentic workflow framework that connects LLM agents to a shared enterprise knowledge base via a lightweight, stdio-based Model Context Protocol server — requiring no additional infrastructure beyond a Git repository and a Node.js runtime already present on each developer's machine.
 
-Presented by **Matt Borja** at **ACCTC 2026**, hosted by **Pima Community College**, week of June 22nd, 2026.
+Presented by **[Matt Borja](https://linkedin.com/in/mattborja)** at **ACCTC 2026**, hosted by **Pima Community College**, week of June 22nd, 2026.
 
 ![GitHub Repository QR Code](qrcode-github.png)
 
