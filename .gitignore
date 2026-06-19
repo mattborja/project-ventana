@@ -1,0 +1,17 @@
+.ignore/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor artifacts
+*~
+*.swp
+*.swo
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
