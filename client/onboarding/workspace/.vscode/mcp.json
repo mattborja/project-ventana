@@ -1,0 +1,24 @@
+{
+  "servers": {
+    "ventana-kb": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/.vscode/mcp/server.js"],
+      "env": {
+        "GIT_HOST_URL": "https://YOUR_GIT_HOST/YOUR_ORG",
+        "GIT_PROJECT": "YOUR_PROJECT",
+        "GIT_REPO": "YOUR_REPO"
+      }
+    },
+    "ventana-kb-py": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["${workspaceFolder}/.vscode/mcp/server.py"],
+      "env": {
+        "GIT_HOST_URL": "https://YOUR_GIT_HOST/YOUR_ORG",
+        "GIT_PROJECT": "YOUR_PROJECT",
+        "GIT_REPO": "YOUR_REPO"
+      }
+    }
+  }
+}
