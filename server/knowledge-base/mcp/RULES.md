@@ -7,7 +7,7 @@ These rules apply when querying or generating content within the `/knowledge-bas
 This domain is authoritative for:
 - MCP concepts as they relate to Project Ventana
 - The stdio implementation used in this framework
-- Git host REST API authentication via GCM
+- Git host REST API authentication via git credential helpers
 - Tool definitions (`list`, `read`) and their expected behavior
 
 This domain is **not** authoritative for:
@@ -18,7 +18,7 @@ This domain is **not** authoritative for:
 ## Accuracy
 
 - Do not conflate the two implementation modes (gateway vs. stdio). Always specify which mode is being discussed.
-- When describing authentication, be precise: GCM retrieves and caches credentials; the MCP server calls `git credential fill` to obtain them at runtime; the Azure DevOps REST API validates the credential on each request.
+- When describing authentication, be precise: the git credential helper retrieves and caches credentials; the MCP server calls `git credential fill` to obtain them at runtime; the Git host validates the credential on each request.
 - The `list` tool returns **immediate children only** (one level deep). It does not return a recursive tree.
 - The `read` tool returns **raw file content** as a UTF-8 string. It does not parse or interpret the content.
 

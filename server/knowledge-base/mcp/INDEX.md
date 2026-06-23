@@ -29,7 +29,7 @@ MCP is the transport layer between an LLM agent and an external resource — in 
 
 ### Authentication
 
-Credentials are sourced from Git Credential Manager (GCM) at runtime via `git credential fill`. GCM handles the Microsoft Entra authentication flow and caches the resulting credential in the OS credential store. No manual token management is required.
+Credentials are sourced from the developer's git credential helper at runtime via `git credential fill`. The credential helper (Git Credential Manager, SSH agent, osxkeychain, etc.) handles provider-specific authentication flows and caches the resulting credential. No manual token management is required.
 
 ## Subdomains
 

@@ -36,6 +36,7 @@ class TestAzureDevOpsUrls(unittest.TestCase):
     def test_azure_devops_services_url(self):
         r = parse_remote_url('https://dev.azure.com/myorg/myproject/_git/myrepo')
         self.assertTrue(r['is_azure_remote'])
+        self.assertFalse(r['is_github_remote'])
         self.assertEqual(r['repo'], 'myrepo')
         self.assertEqual(r['project'], 'myproject')
         self.assertEqual(r['org_url'], 'https://dev.azure.com/myorg')
@@ -71,6 +72,7 @@ class TestNonAzureUrls(unittest.TestCase):
     def test_github_url(self):
         r = parse_remote_url('https://github.com/myorg/myrepo.git')
         self.assertFalse(r['is_azure_remote'])
+        self.assertTrue(r['is_github_remote'])
         self.assertEqual(r['repo'], 'myrepo')
         self.assertEqual(r['namespace'], 'myorg')
         self.assertEqual(r['protocol'], 'https')
@@ -79,6 +81,7 @@ class TestNonAzureUrls(unittest.TestCase):
     def test_generic_https_url(self):
         r = parse_remote_url('https://git.example.com/org/suborg/myrepo')
         self.assertFalse(r['is_azure_remote'])
+        self.assertFalse(r['is_github_remote'])
         self.assertEqual(r['repo'], 'myrepo')
         self.assertEqual(r['namespace'], 'org/suborg')
         self.assertEqual(r['origin'], 'https://git.example.com')

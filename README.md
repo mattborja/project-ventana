@@ -24,7 +24,7 @@ This repository is a deployment template. It contains two self-contained compone
 
 | Directory | Deploy to | Purpose |
 |-----------|-----------|---------|
-| `server/` | Azure Repos (shared, hosted) | The knowledge base — curated content the LLM reads on every connection |
+| `server/` | A shared Git repository (GitHub, Azure Repos, etc.) | The knowledge base — curated content the LLM reads on every connection |
 | `client/` | Each developer's local machine | Onboarding scripts and workspace templates that wire up the MCP connection |
 
 Neither component depends on the other at the file-system level. `server/` is deployed once by a maintainer; `client/` is run once per developer machine.
@@ -35,7 +35,7 @@ Neither component depends on the other at the file-system level. `server/` is de
 
 ### What Gets Deployed
 
-The `server/` directory becomes the root of a dedicated Azure Repos Git repository. When deployed, its contents are:
+The `server/` directory becomes the root of a dedicated Git repository on your chosen host (GitHub, Azure Repos, Bitbucket, Gitea, etc.). When deployed, its contents are:
 
 ```
 /INDEX.md                          ← Agent reads this first on every session
@@ -53,23 +53,23 @@ The LLM agent accesses this repository over HTTPS via the MCP tools `list` and `
 
 ### Prerequisites
 
-- An Azure DevOps organization and project
-- Permission to create a new Git repository within that project
-- Intended consumers (developers) need at minimum **Reader** access to the repository
+- A Git hosting account (GitHub, Azure DevOps, Bitbucket, etc.)
+- Permission to create a new Git repository
+- Intended consumers (developers) need at minimum **read-only** access to the repository
 - Recommended: branch policy on `main` requiring pull requests with at least one approver, to enforce content review before changes go live
 
 ### Steps
 
-1. In Azure DevOps, create a new Git repository (e.g., `knowledge-base`) inside your project.
+1. On your Git host, create a new repository (e.g., `knowledge-base`).
 2. Copy the **contents** of `server/` — not the `server/` folder itself — into the root of that new repository.
 3. Commit and push to the `main` branch.
 4. Configure repository permissions:
-   - Knowledge base maintainers: **Contributor**
-   - Consuming developers: **Reader** (read-only; prevents unauthorized edits)
+   - Knowledge base maintainers: **write** access
+   - Consuming developers: **read-only** access (prevents unauthorized edits)
 5. Configure branch policies on `main`:
    - Require a pull request for all changes
    - Add designated approvers or a reviewer group for content governance
-6. Record the repository URL as `GIT_REMOTE_URL` (for example, `https://git.example.com/your-namespace/your-repository`). Developers will need this during client setup.
+6. Record the repository URL as `GIT_REMOTE_URL` (for example, `https://github.com/your-org/knowledge-base.git` or `https://dev.azure.com/your-org/your-project/_git/knowledge-base`). Developers will need this during client setup.
 
 ### Extending the Knowledge Base
 
@@ -100,7 +100,7 @@ The `client/onboarding/workspace/` directory contains the files that a developer
 | `CLAUDE.md` | Workspace root | Instructs Claude Code to consult the KB first |
 | `.github/copilot-instructions.md` | `.github/` | Instructs GitHub Copilot to consult the KB first |
 
-The MCP server authenticates against Azure Repos using credentials cached by Git Credential Manager (GCM). No tokens are stored in files; GCM transparently renews credentials against Microsoft Entra on each connection.
+The MCP server authenticates against the Git host using credentials cached by the developer's git credential helper (Git Credential Manager, SSH keys, etc.). No tokens are stored in files; the credential helper transparently manages authentication.
 
 ### Prerequisites
 
@@ -201,7 +201,7 @@ If the local context becomes a persistent, recurring need, add a standing refere
 - **Accuracy** — Models grounded in domain-specific, authoritative content produce output calibrated to the actual environment rather than trained approximations.
 - **Automation depth** — Teams using this pattern direct their agents to write and run tests, connect to databases and web applications, perform end-to-end and parity tests, and check for regressions — all within a single session.
 - **Infrastructure reach** — Permissions, sequenced deployment prerequisites, and artifact preparation can also be automated within this same agentic pipeline.
-- **Low overhead** — No centralized MCP gateway to operate. The stdio server runs locally on each developer's machine; access control is enforced entirely at the Azure Repos layer.
+- **Low overhead** — No centralized MCP gateway to operate. The stdio server runs locally on each developer's machine; access control is enforced entirely at the Git host layer.
 
 ---
 

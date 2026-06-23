@@ -46,6 +46,8 @@ function parseRemoteUrl(remoteUrl) {
   const orgPath = isAzureRemote ? segments.slice(0, gitIndex - 1).join('/') : '';
   const project = isAzureRemote ? segments[gitIndex - 1] : '';
 
+  const isGitHubRemote = parsed.hostname === 'github.com';
+
   return {
     host: parsed.hostname,
     protocol: parsed.protocol.slice(0, -1),  // 'https' or 'http'
@@ -55,6 +57,7 @@ function parseRemoteUrl(remoteUrl) {
     project,
     repo,
     isAzureRemote,
+    isGitHubRemote,
   };
 }
 
@@ -76,7 +79,7 @@ function validateConfig() {
 // ---------------------------------------------------------------------------
 // Git credential helper — retrieves cached credential
 // ---------------------------------------------------------------------------
-function getGcmCredential(host, protocol) {
+function getCredential(host, protocol) {
   const input = `protocol=${protocol}\nhost=${host}\n\n`;
   try {
     const out = execFileSync('git', ['credential', 'fill'], {
@@ -84,9 +87,11 @@ function getGcmCredential(host, protocol) {
       encoding: 'utf8',
       timeout: 15_000,
     });
-    const password = out.split('\n').find(l => l.startsWith('password='))?.slice('password='.length).trim();
+    const lines = out.split('\n');
+    const username = lines.find(l => l.startsWith('username='))?.slice('username='.length).trim() ?? '';
+    const password = lines.find(l => l.startsWith('password='))?.slice('password='.length).trim();
     if (!password) throw new Error('No password returned by git credential helper');
-    return password;
+    return { username, password };
   } catch (err) {
     throw new Error(`Credential retrieval failed for ${host}: ${err.message}`);
   }
@@ -94,8 +99,8 @@ function getGcmCredential(host, protocol) {
 
 function authHeader() {
   const { host, protocol } = repositoryInfo();
-  const token = getGcmCredential(host, protocol);
-  return { Authorization: `Basic ${Buffer.from(`:${token}`).toString('base64')}` };
+  const { username, password } = getCredential(host, protocol);
+  return { Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}` };
 }
 
 // ---------------------------------------------------------------------------
@@ -113,7 +118,7 @@ function apiGet(url, extraHeaders = {}) {
       hostname: parsed.hostname,
       path: parsed.pathname + parsed.search,
       method: 'GET',
-      headers: { Accept: 'application/json', ...extraHeaders },
+      headers: { 'User-Agent': 'ventana-kb', Accept: 'application/json', ...extraHeaders },
     };
     if (parsed.port) options.port = parseInt(parsed.port, 10);
     const req = transport.request(
@@ -158,6 +163,7 @@ function interpolateTemplate(template, values) {
 // list — returns immediate children of a path
 async function listPath(scopePath = '/') {
   const repository = repositoryInfo();
+  const useGitHub = !GIT_LIST_API_URL_TEMPLATE && repository.isGitHubRemote;
   let url;
   if (GIT_LIST_API_URL_TEMPLATE) {
     url = interpolateTemplate(GIT_LIST_API_URL_TEMPLATE, { ...repository, scopePath, apiVersion: API_VER });
@@ -167,12 +173,22 @@ async function listPath(scopePath = '/') {
     azureUrl.searchParams.set('recursionLevel', 'OneLevel');
     azureUrl.searchParams.set('api-version', API_VER);
     url = azureUrl.toString();
+  } else if (repository.isGitHubRemote) {
+    const contentsPath = scopePath === '/' ? '' : scopePath.replace(/^\//, '').replace(/\/$/, '');
+    url = `https://api.github.com/repos/${repository.namespace}/${repository.repo}/contents/${contentsPath}`;
   } else {
     providerError('GIT_LIST_API_URL_TEMPLATE');
   }
 
   const { body } = await apiGet(url, authHeader());
   const data = JSON.parse(body);
+
+  if (useGitHub) {
+    return (Array.isArray(data) ? data : []).map(item => ({
+      path: `/${item.path}`,
+      type: item.type === 'dir' ? 'folder' : 'file',
+    }));
+  }
 
   return (data.value ?? [])
     .filter(item => item.path !== scopePath)
@@ -186,6 +202,7 @@ async function listPath(scopePath = '/') {
 // read — returns raw file content
 async function readPath(path) {
   const repository = repositoryInfo();
+  const useGitHub = !GIT_READ_API_URL_TEMPLATE && repository.isGitHubRemote;
   let url;
   if (GIT_READ_API_URL_TEMPLATE) {
     url = interpolateTemplate(GIT_READ_API_URL_TEMPLATE, { ...repository, path, apiVersion: API_VER });
@@ -194,13 +211,16 @@ async function readPath(path) {
     azureUrl.searchParams.set('path', path);
     azureUrl.searchParams.set('api-version', API_VER);
     url = azureUrl.toString();
+  } else if (repository.isGitHubRemote) {
+    const filePath = path.replace(/^\//, '');
+    url = `https://api.github.com/repos/${repository.namespace}/${repository.repo}/contents/${filePath}`;
   } else {
     providerError('GIT_READ_API_URL_TEMPLATE');
   }
 
   const { body } = await apiGet(url, {
     ...authHeader(),
-    Accept: 'application/octet-stream',
+    Accept: useGitHub ? 'application/vnd.github.raw+json' : 'application/octet-stream',
   });
   return body;
 }

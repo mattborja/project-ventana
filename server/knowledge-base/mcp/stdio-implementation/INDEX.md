@@ -32,17 +32,30 @@ The server validates `GIT_REMOTE_URL` at startup and exits with a descriptive er
 
 1. VS Code launches the MCP server as a child process when the `ventana-kb` server is activated.
 2. The server calls `git credential fill` with the Git host to retrieve the cached credential from the configured credential helper.
-3. The credential is encoded as HTTP Basic auth (`:<token>` base64-encoded) and attached to every REST request.
+3. The credential is encoded as HTTP Basic auth (`username:token` base64-encoded) and attached to every REST request.
 4. Tool calls from the LLM agent are dispatched to `list` or `read`, which call the Git host Items API over HTTPS and return the result as text content.
 
 ## Git Host REST Endpoints Used
 
-When the remote URL is in Azure Repos format, the server uses the Azure Items REST API by default. For other Git providers, supply `GIT_LIST_API_URL_TEMPLATE` and `GIT_READ_API_URL_TEMPLATE` to map `list` and `read` requests to your provider-specific REST endpoints.
+The server auto-detects the Git provider from the remote URL and uses the appropriate REST API:
+
+### GitHub (auto-detected for `github.com` remotes)
+
+| Operation | Endpoint |
+|-----------|----------|
+| List path | `GET https://api.github.com/repos/{owner}/{repo}/contents/{path}` |
+| Read file | `GET https://api.github.com/repos/{owner}/{repo}/contents/{path}` with `Accept: application/vnd.github.raw+json` |
+
+### Azure Repos (auto-detected for URLs containing `/_git/`)
 
 | Operation | Endpoint |
 |-----------|----------|
 | List path | `GET /{org}/{project}/_apis/git/repositories/{repo}/items?scopePath={path}&recursionLevel=OneLevel&api-version=7.1` |
 | Read file | `GET /{org}/{project}/_apis/git/repositories/{repo}/items?path={path}&api-version=7.1` with `Accept: application/octet-stream` |
+
+### Other providers
+
+For Git hosts that are not auto-detected, supply `GIT_LIST_API_URL_TEMPLATE` and `GIT_READ_API_URL_TEMPLATE` to map `list` and `read` requests to your provider-specific REST endpoints.
 
 ## Dependencies
 

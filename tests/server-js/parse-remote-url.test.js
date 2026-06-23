@@ -9,6 +9,7 @@ import { parseRemoteUrl } from '../../client/onboarding/workspace/.vscode/mcp/se
 test('Azure DevOps Services URL is parsed correctly', () => {
   const r = parseRemoteUrl('https://dev.azure.com/myorg/myproject/_git/myrepo');
   assert.equal(r.isAzureRemote, true);
+  assert.equal(r.isGitHubRemote, false);
   assert.equal(r.repo, 'myrepo');
   assert.equal(r.project, 'myproject');
   assert.equal(r.orgUrl, 'https://dev.azure.com/myorg');
@@ -45,6 +46,7 @@ test('Azure DevOps Server with collection prefix is parsed correctly', () => {
 test('GitHub URL is parsed correctly', () => {
   const r = parseRemoteUrl('https://github.com/myorg/myrepo.git');
   assert.equal(r.isAzureRemote, false);
+  assert.equal(r.isGitHubRemote, true);
   assert.equal(r.repo, 'myrepo');
   assert.equal(r.namespace, 'myorg');
   assert.equal(r.protocol, 'https');
@@ -54,6 +56,7 @@ test('GitHub URL is parsed correctly', () => {
 test('Generic HTTPS Git URL is parsed correctly', () => {
   const r = parseRemoteUrl('https://git.example.com/org/suborg/myrepo');
   assert.equal(r.isAzureRemote, false);
+  assert.equal(r.isGitHubRemote, false);
   assert.equal(r.repo, 'myrepo');
   assert.equal(r.namespace, 'org/suborg');
   assert.equal(r.origin, 'https://git.example.com');

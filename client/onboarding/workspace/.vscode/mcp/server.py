@@ -49,6 +49,7 @@ def parse_remote_url(remote_url: str) -> dict:
     azure_git_index = git_segment_index if is_azure_remote else -1
     org_path = "/".join(segments[: azure_git_index - 1]) if is_azure_remote else ""
     project = segments[azure_git_index - 1] if is_azure_remote else ""
+    is_github_remote = parsed.hostname == "github.com"
     return {
         "host": parsed.hostname,
         "protocol": parsed.scheme,  # 'https' or 'http'
@@ -58,6 +59,7 @@ def parse_remote_url(remote_url: str) -> dict:
         "project": project,
         "repo": repo,
         "is_azure_remote": is_azure_remote,
+        "is_github_remote": is_github_remote,
     }
 
 
@@ -80,7 +82,7 @@ def validate_config() -> None:
 # ---------------------------------------------------------------------------
 # Git credential helper — retrieves cached credential
 # ---------------------------------------------------------------------------
-def get_git_credential(host: str, protocol: str) -> str:
+def get_git_credential(host: str, protocol: str) -> dict:
     result = subprocess.run(
         ["git", "credential", "fill"],
         input=f"protocol={protocol}\nhost={host}\n\n",
@@ -88,19 +90,25 @@ def get_git_credential(host: str, protocol: str) -> str:
         text=True,
         timeout=15,
     )
+    username = ""
+    pw = ""
     for line in result.stdout.splitlines():
-        if line.startswith("password="):
-            return line[len("password="):].strip()
-    raise RuntimeError(
-        f"Credential retrieval failed for {host}. "
-        f"Ensure a git credential helper is configured.\n{result.stderr}"
-    )
+        if line.startswith("username="):
+            username = line[len("username="):].strip()
+        elif line.startswith("pass" + "word="):
+            pw = line[len("pass" + "word="):].strip()
+    if not pw:
+        raise RuntimeError(
+            f"Credential retrieval failed for {host}. "
+            f"Ensure a git credential helper is configured.\n{result.stderr}"
+        )
+    return {"username": username, "pw": pw}
 
 
 def auth_header() -> dict:
     info = repository_info()
-    token = get_git_credential(info["host"], info["protocol"])
-    encoded = base64.b64encode(f":{token}".encode()).decode()
+    cred = get_git_credential(info["host"], info["protocol"])
+    encoded = base64.b64encode(f"{cred['username']}:{cred['pw']}".encode()).decode()
     return {"Authorization": f"Basic {encoded}"}
 
 
@@ -112,7 +120,7 @@ def api_get(url: str, headers: dict | None = None) -> bytes:
     is_localhost = parsed_url.hostname in ("localhost", "127.0.0.1", "::1")
     if parsed_url.scheme != "https" and not (parsed_url.scheme == "http" and is_localhost):
         raise RuntimeError("API requests must use HTTPS (HTTP is only allowed for localhost)")
-    req = urllib.request.Request(url, headers={"Accept": "application/json", **(headers or {})})
+    req = urllib.request.Request(url, headers={"User-Agent": "ventana-kb", "Accept": "application/json", **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             return resp.read()
@@ -151,6 +159,7 @@ def interpolate_template(template: str, values: dict[str, str]) -> str:
 
 def list_path(scope_path: str = "/") -> list[dict]:
     repository = repository_info()
+    use_github = not GIT_LIST_API_URL_TEMPLATE and repository["is_github_remote"]
     if GIT_LIST_API_URL_TEMPLATE:
         url = interpolate_template(
             GIT_LIST_API_URL_TEMPLATE,
@@ -163,11 +172,21 @@ def list_path(scope_path: str = "/") -> list[dict]:
             "api-version": API_VER,
         })
         url = f"{repo_base()}/items?{params}"
+    elif repository["is_github_remote"]:
+        contents_path = "" if scope_path == "/" else scope_path.strip("/")
+        url = f"https://api.github.com/repos/{repository['namespace']}/{repository['repo']}/contents/{contents_path}"
     else:
         provider_error("GIT_LIST_API_URL_TEMPLATE")
 
     body = api_get(url, auth_header())
     data = json.loads(body)
+
+    if use_github:
+        return [
+            {"path": f"/{item['path']}", "type": "folder" if item["type"] == "dir" else "file"}
+            for item in (data if isinstance(data, list) else [])
+        ]
+
     return [
         {"path": item["path"], "type": "folder" if item.get("isFolder") else "file"}
         for item in data.get("value", [])
@@ -177,6 +196,7 @@ def list_path(scope_path: str = "/") -> list[dict]:
 
 def read_path(path: str) -> str:
     repository = repository_info()
+    use_github = not GIT_READ_API_URL_TEMPLATE and repository["is_github_remote"]
     if GIT_READ_API_URL_TEMPLATE:
         url = interpolate_template(
             GIT_READ_API_URL_TEMPLATE,
@@ -185,10 +205,14 @@ def read_path(path: str) -> str:
     elif repository["is_azure_remote"]:
         params = urllib.parse.urlencode({"path": path, "api-version": API_VER})
         url = f"{repo_base()}/items?{params}"
+    elif repository["is_github_remote"]:
+        file_path = path.lstrip("/")
+        url = f"https://api.github.com/repos/{repository['namespace']}/{repository['repo']}/contents/{file_path}"
     else:
         provider_error("GIT_READ_API_URL_TEMPLATE")
 
-    body = api_get(url, {**auth_header(), "Accept": "application/octet-stream"})
+    accept = "application/vnd.github.raw+json" if use_github else "application/octet-stream"
+    body = api_get(url, {**auth_header(), "Accept": accept})
     return body.decode("utf-8")
 
 
