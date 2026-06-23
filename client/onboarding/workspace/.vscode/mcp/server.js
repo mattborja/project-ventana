@@ -55,11 +55,11 @@ function parseRemoteUrl(remoteUrl) {
   };
 }
 
-let repoCoordsCache = null;
+let repositoryInfoCache = null;
 
-function repoCoords() {
-  if (!repoCoordsCache) repoCoordsCache = parseRemoteUrl(GIT_REMOTE_URL);
-  return repoCoordsCache;
+function repositoryInfo() {
+  if (!repositoryInfoCache) repositoryInfoCache = parseRemoteUrl(GIT_REMOTE_URL);
+  return repositoryInfoCache;
 }
 
 function validateConfig() {
@@ -67,7 +67,7 @@ function validateConfig() {
     .filter(([, v]) => !v)
     .map(([k]) => k);
   if (missing.length) throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
-  repoCoords();
+  repositoryInfo();
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ function getGcmCredential(host) {
 }
 
 function authHeader() {
-  const token = getGcmCredential(repoCoords().host);
+  const token = getGcmCredential(repositoryInfo().host);
   return { Authorization: `Basic ${Buffer.from(`:${token}`).toString('base64')}` };
 }
 
@@ -123,7 +123,7 @@ function httpsGet(url, extraHeaders = {}) {
 }
 
 function repoBase() {
-  const { orgUrl, project, repo } = repoCoords();
+  const { orgUrl, project, repo } = repositoryInfo();
   return `${orgUrl}/${encodeURIComponent(project)}/_apis/git/repositories/${encodeURIComponent(repo)}`;
 }
 
@@ -146,11 +146,11 @@ function interpolateTemplate(template, values) {
 
 // list — returns immediate children of a path
 async function listPath(scopePath = '/') {
-  const coords = repoCoords();
+  const repository = repositoryInfo();
   let url;
   if (GIT_LIST_API_URL_TEMPLATE) {
-    url = interpolateTemplate(GIT_LIST_API_URL_TEMPLATE, { ...coords, scopePath, apiVersion: API_VER });
-  } else if (coords.isAzureRemote) {
+    url = interpolateTemplate(GIT_LIST_API_URL_TEMPLATE, { ...repository, scopePath, apiVersion: API_VER });
+  } else if (repository.isAzureRemote) {
     const azureUrl = new URL(`${repoBase()}/items`);
     azureUrl.searchParams.set('scopePath', scopePath);
     azureUrl.searchParams.set('recursionLevel', 'OneLevel');
@@ -174,11 +174,11 @@ async function listPath(scopePath = '/') {
 
 // read — returns raw file content
 async function readPath(path) {
-  const coords = repoCoords();
+  const repository = repositoryInfo();
   let url;
   if (GIT_READ_API_URL_TEMPLATE) {
-    url = interpolateTemplate(GIT_READ_API_URL_TEMPLATE, { ...coords, path, apiVersion: API_VER });
-  } else if (coords.isAzureRemote) {
+    url = interpolateTemplate(GIT_READ_API_URL_TEMPLATE, { ...repository, path, apiVersion: API_VER });
+  } else if (repository.isAzureRemote) {
     const azureUrl = new URL(`${repoBase()}/items`);
     azureUrl.searchParams.set('path', path);
     azureUrl.searchParams.set('api-version', API_VER);

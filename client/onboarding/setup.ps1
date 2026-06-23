@@ -4,7 +4,7 @@
     Project Ventana — Developer Onboarding (Windows / PowerShell)
 .DESCRIPTION
     Checks prerequisites, installs npm dependencies, configures workspace\.vscode\mcp.json
-    with Git host coordinates, and triggers git credential authentication.
+    with a Git remote URL, and triggers git credential authentication.
 #>
 
 Set-StrictMode -Version Latest

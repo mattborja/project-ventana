@@ -21,7 +21,7 @@ GIT_REMOTE_URL = os.environ.get("GIT_REMOTE_URL", "")
 API_VER = "7.1"
 GIT_LIST_API_URL_TEMPLATE = os.environ.get("GIT_LIST_API_URL_TEMPLATE", "")
 GIT_READ_API_URL_TEMPLATE = os.environ.get("GIT_READ_API_URL_TEMPLATE", "")
-REPO_COORDS: dict | None = None
+REPOSITORY_INFO: dict | None = None
 
 
 def parse_remote_url(remote_url: str) -> dict:
@@ -58,11 +58,11 @@ def parse_remote_url(remote_url: str) -> dict:
     }
 
 
-def repo_coords() -> dict:
-    global REPO_COORDS
-    if REPO_COORDS is None:
-        REPO_COORDS = parse_remote_url(GIT_REMOTE_URL)
-    return REPO_COORDS
+def repository_info() -> dict:
+    global REPOSITORY_INFO
+    if REPOSITORY_INFO is None:
+        REPOSITORY_INFO = parse_remote_url(GIT_REMOTE_URL)
+    return REPOSITORY_INFO
 
 
 def validate_config() -> None:
@@ -71,7 +71,7 @@ def validate_config() -> None:
     }.items() if not v]
     if missing:
         raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
-    repo_coords()
+    repository_info()
 
 
 # ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ def get_git_credential(host: str) -> str:
 
 
 def auth_header() -> dict:
-    token = get_git_credential(repo_coords()["host"])
+    token = get_git_credential(repository_info()["host"])
     encoded = base64.b64encode(f":{token}".encode()).decode()
     return {"Authorization": f"Basic {encoded}"}
 
@@ -114,11 +114,11 @@ def https_get(url: str, headers: dict | None = None) -> bytes:
 
 
 def repo_base() -> str:
-    coords = repo_coords()
+    repository = repository_info()
     return (
-        f"{coords['org_url']}"
-        f"/{urllib.parse.quote(coords['project'], safe='')}"
-        f"/_apis/git/repositories/{urllib.parse.quote(coords['repo'], safe='')}"
+        f"{repository['org_url']}"
+        f"/{urllib.parse.quote(repository['project'], safe='')}"
+        f"/_apis/git/repositories/{urllib.parse.quote(repository['repo'], safe='')}"
     )
 
 
@@ -142,13 +142,13 @@ def interpolate_template(template: str, values: dict[str, str]) -> str:
 
 
 def list_path(scope_path: str = "/") -> list[dict]:
-    coords = repo_coords()
+    repository = repository_info()
     if GIT_LIST_API_URL_TEMPLATE:
         url = interpolate_template(
             GIT_LIST_API_URL_TEMPLATE,
-            {**coords, "scopePath": scope_path, "apiVersion": API_VER},
+            {**repository, "scopePath": scope_path, "apiVersion": API_VER},
         )
-    elif coords["is_azure_remote"]:
+    elif repository["is_azure_remote"]:
         params = urllib.parse.urlencode({
             "scopePath": scope_path,
             "recursionLevel": "OneLevel",
@@ -168,13 +168,13 @@ def list_path(scope_path: str = "/") -> list[dict]:
 
 
 def read_path(path: str) -> str:
-    coords = repo_coords()
+    repository = repository_info()
     if GIT_READ_API_URL_TEMPLATE:
         url = interpolate_template(
             GIT_READ_API_URL_TEMPLATE,
-            {**coords, "path": path, "apiVersion": API_VER},
+            {**repository, "path": path, "apiVersion": API_VER},
         )
-    elif coords["is_azure_remote"]:
+    elif repository["is_azure_remote"]:
         params = urllib.parse.urlencode({"path": path, "api-version": API_VER})
         url = f"{repo_base()}/items?{params}"
     else:
