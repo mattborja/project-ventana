@@ -14,6 +14,8 @@ Presented by **[Matt Borja](https://linkedin.com/in/mattborja)** at **ACCTC 2026
 
 ![GitHub Repository QR Code](qrcode-github.png)
 
+> **📄 Conference Slides:** [`slides.pdf`](slides.pdf) — placeholder available now; final slides will be committed here once ready. To be notified when the finalized deck and future updates are published, **Watch this repository** on GitHub (click **Watch → All Activity** or **Releases Only** at the top of the repo page).
+
 ---
 
 ## Architecture
@@ -165,7 +167,7 @@ In a Copilot or Claude chat window, ask:
 
 > "What domains are available in the knowledge base?"
 
-The agent should call `list("/")` and `read("/INDEX.md")` via the `ventana-kb` MCP tool and return a summary of the knowledge base contents.
+The agent should call `ventana-list("/")` and `ventana-read("/INDEX.md")` via the `ventana-kb` MCP tool and return a summary of the knowledge base contents.
 
 If the agent responds without invoking the MCP tool, check that:
 - `.vscode/mcp.json` is present in the workspace root

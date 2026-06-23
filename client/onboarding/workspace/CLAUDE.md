@@ -6,17 +6,17 @@ This workspace is connected to a knowledge base repository via the **ventana-kb*
 
 The MCP server exposes two tools:
 
-- `list(path)` — lists the contents of a path in the knowledge base repository
-- `read(path)` — reads the contents of a file from the knowledge base repository
+- `ventana-list(path)` — lists the contents of a path in the knowledge base repository
+- `ventana-read(path)` — reads the contents of a file from the knowledge base repository
 
 ## Required Workflow
 
 Before answering any question or generating any output that depends on project-specific knowledge, you **must** consult the knowledge base in this order:
 
-1. Call `list("/")` to retrieve the root structure.
-2. Call `read("/INDEX.md")` to load the global index.
-3. Call `read("/RULES.md")` to load the global rules. Follow them without exception.
-4. Navigate to the relevant domain by calling `list("/<domain>")`, then read that domain's `INDEX.md` and `RULES.md`.
+1. Call `ventana-list("/")` to retrieve the root structure.
+2. Call `ventana-read("/INDEX.md")` to load the global index.
+3. Call `ventana-read("/RULES.md")` to load the global rules. Follow them without exception.
+4. Navigate to the relevant domain by calling `ventana-list("/<domain>")`, then read that domain's `INDEX.md` and `RULES.md`.
 5. Repeat recursively into subdomains as needed until you have located the authoritative content for the request.
 
 ## Priority Order

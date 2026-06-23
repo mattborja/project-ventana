@@ -57,7 +57,7 @@ From the root of this project-ventana repository, run the script for your platfo
 bash client/onboarding/setup.sh
 
 # Windows (PowerShell)
-pwsh client\onboarding\setup.ps1
+powershell -ExecutionPolicy Bypass -File client\onboarding\setup.ps1
 ```
 
 The script will:
@@ -95,7 +95,7 @@ Open the project folder in VS Code. VS Code will detect `.vscode/mcp.json` and r
 
 ### Step 5 — Verify the connection
 
-Open a Copilot or Claude Code chat in the project and ask a simple question that the KB would cover. The agent should call `list("/")` and `read("/INDEX.md")` before responding — you will see these tool calls in the chat if tool use is visible in your IDE configuration.
+Open a Copilot or Claude Code chat in the project and ask a simple question that the KB would cover. The agent should call `ventana-list("/")` and `ventana-read("/INDEX.md")` before responding — you will see these tool calls in the chat if tool use is visible in your IDE configuration.
 
 If the MCP server fails to start, check:
 - The `GIT_REMOTE_URL` value in `.vscode/mcp.json` is correct.

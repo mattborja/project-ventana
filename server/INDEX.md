@@ -24,7 +24,7 @@ Populate this table with your own domains after creating them.
 ## How to Navigate This Knowledge Base
 
 1. Read `/RULES.md` immediately after this file.
-2. Use `list("<domain-path>")` to explore the relevant domain.
+2. Use `ventana-list("<domain-path>")` to explore the relevant domain.
 3. Read a domain's `INDEX.md` before relying on its content files.
 4. If a subdomain has its own `INDEX.md` or `RULES.md`, read those before proceeding.
 5. Apply domain-specific rules in addition to the global rules.
