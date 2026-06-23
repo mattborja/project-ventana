@@ -21,12 +21,15 @@ function parseRemoteUrl(remoteUrl) {
   try {
     parsed = new URL(remoteUrl);
   } catch {
-    throw new Error('GIT_REMOTE_URL must be a valid absolute HTTPS URL');
+    throw new Error('GIT_REMOTE_URL must be a valid Azure Repos HTTPS remote URL');
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error('GIT_REMOTE_URL must use HTTPS');
   }
   const segments = parsed.pathname.split('/').filter(Boolean);
   const gitIndex = segments.indexOf('_git');
   if (gitIndex < 2 || gitIndex + 1 >= segments.length) {
-    throw new Error('GIT_REMOTE_URL must include the Azure Repos pattern /{org}/{project}/_git/{repo}');
+    throw new Error('GIT_REMOTE_URL must use Azure Repos path format /{org}/{project}/_git/{repo}');
   }
 
   const orgPath = segments.slice(0, gitIndex - 1).join('/');

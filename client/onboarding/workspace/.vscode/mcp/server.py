@@ -24,16 +24,18 @@ REPO_COORDS: dict | None = None
 def parse_remote_url(remote_url: str) -> dict:
     parsed = urllib.parse.urlparse(remote_url)
     if not parsed.scheme or not parsed.netloc:
-        raise ValueError("GIT_REMOTE_URL must be a valid absolute HTTPS URL")
+        raise ValueError("GIT_REMOTE_URL must be a valid Azure Repos HTTPS remote URL")
+    if parsed.scheme != "https":
+        raise ValueError("GIT_REMOTE_URL must use HTTPS")
 
     segments = [segment for segment in parsed.path.split("/") if segment]
     try:
         git_index = segments.index("_git")
     except ValueError as exc:
-        raise ValueError("GIT_REMOTE_URL must include the Azure Repos pattern /{org}/{project}/_git/{repo}") from exc
+        raise ValueError("GIT_REMOTE_URL must use Azure Repos path format /{org}/{project}/_git/{repo}") from exc
 
     if git_index < 2 or git_index + 1 >= len(segments):
-        raise ValueError("GIT_REMOTE_URL must include the Azure Repos pattern /{org}/{project}/_git/{repo}")
+        raise ValueError("GIT_REMOTE_URL must use Azure Repos path format /{org}/{project}/_git/{repo}")
 
     org_path = "/".join(segments[: git_index - 1])
     return {

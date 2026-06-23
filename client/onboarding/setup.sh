@@ -62,7 +62,10 @@ echo "workspace/.vscode/mcp.json updated."
 # ---------------------------------------------------------------------------
 # Git credential helper — trigger initial authentication
 # ---------------------------------------------------------------------------
-GIT_HOST=$(echo "$REMOTE_URL" | sed -E 's|^[A-Za-z]+://||' | cut -d/ -f1)
+GIT_HOST=$(node --input-type=commonjs -e "console.log(new URL(process.argv[1]).hostname)" "$REMOTE_URL" 2>/dev/null || true)
+if [ -z "$GIT_HOST" ]; then
+  fail "GIT_REMOTE_URL must be a valid absolute URL."
+fi
 
 echo ""
 echo "Authenticating with $GIT_HOST..."
