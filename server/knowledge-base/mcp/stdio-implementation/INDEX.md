@@ -12,7 +12,7 @@ These files live under `client/onboarding/workspace/` in this repository. The on
 | `client/onboarding/workspace/.vscode/mcp/server.py` | Python MCP server entry point. Launched by VS Code via `mcp.json`. |
 | `client/onboarding/workspace/.vscode/mcp/package.json` | Declares the `@modelcontextprotocol/sdk` dependency and sets `"type": "module"` for ESM. |
 | `client/onboarding/workspace/.vscode/mcp/requirements.txt` | Declares the `mcp` dependency for the Python variant. |
-| `client/onboarding/workspace/.vscode/mcp.json` | Registers both server variants with VS Code. Edit the `env` block to supply Git host coordinates, then remove the entry you are not using. |
+| `client/onboarding/workspace/.vscode/mcp.json` | Registers both server variants with VS Code. Edit the `env` block to supply `GIT_REMOTE_URL`, then remove the entry you are not using. |
 | `client/onboarding/workspace/CLAUDE.md` | Workspace instructions for Claude Code — directs the agent to consult the KB first. |
 | `client/onboarding/workspace/.github/copilot-instructions.md` | Equivalent instructions for GitHub Copilot. |
 
@@ -22,11 +22,9 @@ The server is configured entirely through environment variables, supplied via `.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `GIT_HOST_URL` | Base URL of the Git host organization or account | `https://git.example.com/your-namespace` |
-| `GIT_PROJECT` | Project or namespace within the host | `MyProject` |
-| `GIT_REPO` | Repository name within the project | `knowledge-base` |
+| `GIT_REMOTE_URL` | HTTPS remote URL of the knowledge base repository | `https://dev.azure.com/your-org/your-project/_git/knowledge-base` |
 
-The server validates all three at startup and exits with a descriptive error if any are missing.
+The server validates `GIT_REMOTE_URL` at startup and exits with a descriptive error if it is missing or malformed.
 
 ## Runtime Flow
 

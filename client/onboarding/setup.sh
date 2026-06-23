@@ -42,20 +42,16 @@ echo "Configure your knowledge base connection."
 echo "These values will be written into workspace/.vscode/mcp.json."
 echo ""
 
-read -rp "  Git host URL (token: GIT_HOST_URL, e.g. https://git.example.com/your-namespace): " HOST_URL
-read -rp "  Project name: "                                         PROJECT
-read -rp "  Repository name: "                                      REPO_NAME
+read -rp "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://dev.azure.com/your-org/your-project/_git/your-repo): " REMOTE_URL
 
 MCP_JSON="$WORKSPACE_DIR/.vscode/mcp.json"
 
-node --input-type=commonjs - "$MCP_JSON" "$HOST_URL" "$PROJECT" "$REPO_NAME" <<'JSEOF'
+node --input-type=commonjs - "$MCP_JSON" "$REMOTE_URL" <<'JSEOF'
 const fs   = require('fs');
 const file = process.argv[1];
 const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 for (const server of Object.values(data.servers)) {
-  server.env.GIT_HOST_URL = process.argv[2];
-  server.env.GIT_PROJECT  = process.argv[3];
-  server.env.GIT_REPO     = process.argv[4];
+  server.env.GIT_REMOTE_URL = process.argv[2];
 }
 fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 JSEOF
@@ -66,7 +62,7 @@ echo "workspace/.vscode/mcp.json updated."
 # ---------------------------------------------------------------------------
 # Git credential helper — trigger initial authentication
 # ---------------------------------------------------------------------------
-GIT_HOST=$(echo "$HOST_URL" | sed 's|https://||' | cut -d/ -f1)
+GIT_HOST=$(echo "$REMOTE_URL" | sed -E 's|^[A-Za-z]+://||' | cut -d/ -f1)
 
 echo ""
 echo "Authenticating with $GIT_HOST..."
@@ -86,6 +82,5 @@ echo "  3. The ventana-kb MCP server will appear in the MCP panel."
 echo "  4. Open a Copilot or Claude chat and ask a question — the agent"
 echo "     will consult the knowledge base automatically."
 echo ""
-echo "Knowledge base tokens: GIT_HOST_URL=$HOST_URL, GIT_PROJECT=$PROJECT, GIT_REPO=$REPO_NAME"
-echo "Knowledge base remote token: set GIT_REMOTE_URL to your host-specific repository URL"
+echo "Knowledge base token: GIT_REMOTE_URL=$REMOTE_URL"
 echo ""

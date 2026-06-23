@@ -16,20 +16,48 @@ from mcp.types import CallToolResult, TextContent, Tool
 # ---------------------------------------------------------------------------
 # Configuration — set these in .vscode/mcp.json or as environment variables
 # ---------------------------------------------------------------------------
-GIT_HOST_URL = os.environ.get("GIT_HOST_URL", "").rstrip("/")
-GIT_PROJECT  = os.environ.get("GIT_PROJECT", "")
-GIT_REPO     = os.environ.get("GIT_REPO", "")
-API_VER      = "7.1"
+GIT_REMOTE_URL = os.environ.get("GIT_REMOTE_URL", "")
+API_VER = "7.1"
+REPO_COORDS: dict | None = None
+
+
+def parse_remote_url(remote_url: str) -> dict:
+    parsed = urllib.parse.urlparse(remote_url)
+    if not parsed.scheme or not parsed.netloc:
+        raise ValueError("GIT_REMOTE_URL must be a valid absolute HTTPS URL")
+
+    segments = [segment for segment in parsed.path.split("/") if segment]
+    try:
+        git_index = segments.index("_git")
+    except ValueError as exc:
+        raise ValueError("GIT_REMOTE_URL must include the Azure Repos pattern /{org}/{project}/_git/{repo}") from exc
+
+    if git_index < 2 or git_index + 1 >= len(segments):
+        raise ValueError("GIT_REMOTE_URL must include the Azure Repos pattern /{org}/{project}/_git/{repo}")
+
+    org_path = "/".join(segments[: git_index - 1])
+    return {
+        "host": parsed.hostname,
+        "org_url": f"{parsed.scheme}://{parsed.netloc}/{org_path}",
+        "project": segments[git_index - 1],
+        "repo": segments[git_index + 1].removesuffix(".git"),
+    }
+
+
+def repo_coords() -> dict:
+    global REPO_COORDS
+    if REPO_COORDS is None:
+        REPO_COORDS = parse_remote_url(GIT_REMOTE_URL)
+    return REPO_COORDS
 
 
 def validate_config() -> None:
     missing = [k for k, v in {
-        "GIT_HOST_URL": GIT_HOST_URL,
-        "GIT_PROJECT":  GIT_PROJECT,
-        "GIT_REPO":     GIT_REPO,
+        "GIT_REMOTE_URL": GIT_REMOTE_URL,
     }.items() if not v]
     if missing:
         raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
+    repo_coords()
 
 
 # ---------------------------------------------------------------------------
@@ -53,8 +81,7 @@ def get_git_credential(host: str) -> str:
 
 
 def auth_header() -> dict:
-    host = urllib.parse.urlparse(GIT_HOST_URL).hostname
-    token = get_git_credential(host)
+    token = get_git_credential(repo_coords()["host"])
     encoded = base64.b64encode(f":{token}".encode()).decode()
     return {"Authorization": f"Basic {encoded}"}
 
@@ -73,10 +100,11 @@ def https_get(url: str, headers: dict | None = None) -> bytes:
 
 
 def repo_base() -> str:
+    coords = repo_coords()
     return (
-        f"{GIT_HOST_URL}"
-        f"/{urllib.parse.quote(GIT_PROJECT, safe='')}"
-        f"/_apis/git/repositories/{urllib.parse.quote(GIT_REPO, safe='')}"
+        f"{coords['org_url']}"
+        f"/{urllib.parse.quote(coords['project'], safe='')}"
+        f"/_apis/git/repositories/{urllib.parse.quote(coords['repo'], safe='')}"
     )
 
 

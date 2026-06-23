@@ -13,16 +13,47 @@ import { URL } from 'url';
 // ---------------------------------------------------------------------------
 // Configuration — set these in .vscode/mcp.json or as environment variables
 // ---------------------------------------------------------------------------
-const ORG_URL  = (process.env.GIT_HOST_URL  ?? '').replace(/\/$/, '');
-const PROJECT  =  process.env.GIT_PROJECT   ?? '';
-const REPO     =  process.env.GIT_REPO      ?? '';
-const API_VER  = '7.1';
+const GIT_REMOTE_URL = process.env.GIT_REMOTE_URL ?? '';
+const API_VER = '7.1';
+
+function parseRemoteUrl(remoteUrl) {
+  let parsed;
+  try {
+    parsed = new URL(remoteUrl);
+  } catch {
+    throw new Error('GIT_REMOTE_URL must be a valid absolute HTTPS URL');
+  }
+  const segments = parsed.pathname.split('/').filter(Boolean);
+  const gitIndex = segments.indexOf('_git');
+  if (gitIndex < 2 || gitIndex + 1 >= segments.length) {
+    throw new Error('GIT_REMOTE_URL must include the Azure Repos pattern /{org}/{project}/_git/{repo}');
+  }
+
+  const orgPath = segments.slice(0, gitIndex - 1).join('/');
+  const project = segments[gitIndex - 1];
+  const repo = segments[gitIndex + 1].replace(/\.git$/, '');
+
+  return {
+    host: parsed.hostname,
+    orgUrl: `${parsed.origin}/${orgPath}`,
+    project,
+    repo,
+  };
+}
+
+let repoCoordsCache = null;
+
+function repoCoords() {
+  if (!repoCoordsCache) repoCoordsCache = parseRemoteUrl(GIT_REMOTE_URL);
+  return repoCoordsCache;
+}
 
 function validateConfig() {
-  const missing = Object.entries({ GIT_HOST_URL: ORG_URL, GIT_PROJECT: PROJECT, GIT_REPO: REPO })
+  const missing = Object.entries({ GIT_REMOTE_URL })
     .filter(([, v]) => !v)
     .map(([k]) => k);
   if (missing.length) throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  repoCoords();
 }
 
 // ---------------------------------------------------------------------------
@@ -45,8 +76,7 @@ function getGcmCredential(host) {
 }
 
 function authHeader() {
-  const host = new URL(ORG_URL).hostname;
-  const token = getGcmCredential(host);
+  const token = getGcmCredential(repoCoords().host);
   return { Authorization: `Basic ${Buffer.from(`:${token}`).toString('base64')}` };
 }
 
@@ -79,7 +109,8 @@ function httpsGet(url, extraHeaders = {}) {
 }
 
 function repoBase() {
-  return `${ORG_URL}/${encodeURIComponent(PROJECT)}/_apis/git/repositories/${encodeURIComponent(REPO)}`;
+  const { orgUrl, project, repo } = repoCoords();
+  return `${orgUrl}/${encodeURIComponent(project)}/_apis/git/repositories/${encodeURIComponent(repo)}`;
 }
 
 // list — returns immediate children of a path

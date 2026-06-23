@@ -36,7 +36,7 @@ Here is what is in the workspace template and what each piece does:
 
 | File (relative to workspace/) | What it does |
 |-------------------------------|-------------|
-| `.vscode/mcp.json` | Registers the ventana-kb MCP server with VS Code. Contains the host URL, project name, and repository name needed to reach the knowledge base. The onboarding script fills these in automatically. |
+| `.vscode/mcp.json` | Registers the ventana-kb MCP server with VS Code. Contains the `GIT_REMOTE_URL` value needed to reach the knowledge base. The onboarding script fills this in automatically. |
 | `.vscode/mcp/server.js` | The Node.js MCP server. VS Code launches this as a background process when the workspace is opened. It authenticates to the KB repository via the git credential helper and exposes `list` and `read` tools to the AI agent. |
 | `.vscode/mcp/server.py` | The Python equivalent of the above. Use one or the other — delete whichever you do not plan to use, or remove its entry from `mcp.json`. |
 | `.vscode/mcp/package.json` | Declares the Node.js dependency (`@modelcontextprotocol/sdk`). The onboarding script runs `npm install` here automatically. |
@@ -63,7 +63,7 @@ pwsh client\onboarding\setup.ps1
 The script will:
 1. Verify that Node.js ≥ 18 and Git are installed.
 2. Install the Node.js MCP server dependency (`@modelcontextprotocol/sdk`) into `.vscode/mcp/node_modules/`.
-3. Prompt you for the host URL, project name, and repository name of the knowledge base repository, then write these into `.vscode/mcp.json`.
+3. Prompt you for the `GIT_REMOTE_URL` value of the knowledge base repository, then write it into `.vscode/mcp.json`.
 4. Attempt an initial authentication to the Git host via `git credential fill` to pre-populate credentials. A browser window or credential prompt may appear.
 
 ### Step 2 — Choose your MCP server variant
@@ -98,7 +98,7 @@ Open the project folder in VS Code. VS Code will detect `.vscode/mcp.json` and r
 Open a Copilot or Claude Code chat in the project and ask a simple question that the KB would cover. The agent should call `list("/")` and `read("/INDEX.md")` before responding — you will see these tool calls in the chat if tool use is visible in your IDE configuration.
 
 If the MCP server fails to start, check:
-- The host URL, project name, and repository name in `.vscode/mcp.json` are correct.
+- The `GIT_REMOTE_URL` value in `.vscode/mcp.json` is correct.
 - `git credential fill protocol=https host=YOUR_HOST` returns a password when run in a terminal.
 - Node.js (or Python) is on the system PATH visible to VS Code.
 

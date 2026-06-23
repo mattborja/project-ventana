@@ -104,11 +104,9 @@ Confirm the repository root now contains `INDEX.md` and `RULES.md` alongside the
 
 ### 4. Connect developers
 
-Give each developer the following three values so they can run the client onboarding script:
+Give each developer the repository remote URL as token `GIT_REMOTE_URL` so they can run the client onboarding script:
 
-- **Git host URL** — token `GIT_HOST_URL` (e.g., `https://git.example.com/your-namespace`)
-- **Project name** — the project or namespace containing the repo
-- **Repository name** — the repo name you just pushed to
+- **Repository remote URL** — e.g., `https://dev.azure.com/your-org/your-project/_git/your-repo`
 
 See `client/README.md` for the developer onboarding process.
 

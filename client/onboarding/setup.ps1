@@ -56,16 +56,12 @@ Write-Host "Configure your knowledge base connection."
 Write-Host "These values will be written into workspace\.vscode\mcp.json."
 Write-Host ""
 
-$HostUrl  = Read-Host "  Git host URL (token: GIT_HOST_URL, e.g. https://git.example.com/your-namespace)"
-$Project  = Read-Host "  Project name"
-$RepoName = Read-Host "  Repository name"
+$RemoteUrl = Read-Host "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://dev.azure.com/your-org/your-project/_git/your-repo)"
 
 $McpJsonPath = Join-Path $WorkspaceDir '.vscode\mcp.json'
 $McpJson = Get-Content $McpJsonPath -Raw | ConvertFrom-Json
 foreach ($server in $McpJson.servers.PSObject.Properties) {
-    $server.Value.env.GIT_HOST_URL = $HostUrl
-    $server.Value.env.GIT_PROJECT  = $Project
-    $server.Value.env.GIT_REPO     = $RepoName
+    $server.Value.env.GIT_REMOTE_URL = $RemoteUrl
 }
 $McpJson | ConvertTo-Json -Depth 10 | Set-Content $McpJsonPath
 
@@ -75,7 +71,7 @@ Write-Host "workspace\.vscode\mcp.json updated." -ForegroundColor Green
 # ---------------------------------------------------------------------------
 # Git credential helper — trigger initial authentication
 # ---------------------------------------------------------------------------
-$GitHost = ($HostUrl -replace 'https://', '').Split('/')[0]
+$GitHost = ([uri]$RemoteUrl).Host
 
 Write-Host ""
 Write-Host "Authenticating with $GitHost..."
@@ -99,6 +95,5 @@ Write-Host "  3. The ventana-kb MCP server will appear in the MCP panel."
 Write-Host "  4. Open a Copilot or Claude chat and ask a question — the agent"
 Write-Host "     will consult the knowledge base automatically."
 Write-Host ""
-Write-Host "Knowledge base tokens: GIT_HOST_URL=$HostUrl, GIT_PROJECT=$Project, GIT_REPO=$RepoName"
-Write-Host "Knowledge base remote token: set GIT_REMOTE_URL to your host-specific repository URL"
+Write-Host "Knowledge base token: GIT_REMOTE_URL=$RemoteUrl"
 Write-Host ""

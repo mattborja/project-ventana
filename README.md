@@ -112,15 +112,13 @@ Each developer's machine needs:
 
 ### Steps
 
-**Step 1 — Configure Git host coordinates**
+**Step 1 — Configure Git remote URL**
 
 Open `client/onboarding/workspace/.vscode/mcp.json` and replace the placeholder values in the `env` block with the repository details from Part 1:
 
 ```json
 "env": {
-  "GIT_HOST_URL": "<GIT_HOST_URL>",
-  "GIT_PROJECT": "<GIT_PROJECT>",
-  "GIT_REPO": "<GIT_REPO>"
+  "GIT_REMOTE_URL": "<GIT_REMOTE_URL>"
 }
 ```
 
@@ -142,7 +140,7 @@ From the root of this repository:
 The script will:
 - Verify Node.js, npm, and Git prerequisites
 - Run `npm install` inside `client/onboarding/workspace/.vscode/mcp/`
-- Prompt for your Git host coordinates and write them into `.vscode/mcp.json`
+- Prompt for your Git remote URL and write it into `.vscode/mcp.json`
 - Trigger an initial GCM authentication against your Git host (a browser window or OS credential prompt may appear)
 
 **Step 3 — Copy workspace files into the developer's project**
@@ -174,7 +172,7 @@ The agent should call `list("/")` and `read("/INDEX.md")` via the `ventana-kb` M
 If the agent responds without invoking the MCP tool, check that:
 - `.vscode/mcp.json` is present in the workspace root
 - The `ventana-kb` server shows as active (not errored) in the MCP panel
-- The `GIT_HOST_URL`, `GIT_PROJECT`, and `GIT_REPO` values in `mcp.json` match the repository deployed in Part 1
+- The `GIT_REMOTE_URL` value in `mcp.json` matches the repository deployed in Part 1
 - GCM has a cached credential for the configured Git host (`git credential fill` should return a password without prompting)
 
 ---
