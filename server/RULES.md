@@ -28,10 +28,10 @@ Never silently substitute trained knowledge for KB content. If the KB does not c
 ## Accuracy and Attribution
 
 - Do not paraphrase or summarize KB content in ways that change its meaning.
-- When quoting or applying KB content, cite the source path (e.g., "per `/knowledge-base/mcp/RULES.md`").
+- When quoting or applying KB content, cite the source path (e.g., "per `/knowledge-base/<domain>/RULES.md`").
 - If KB content appears to conflict with trained knowledge, follow the KB and note the discrepancy.
 
 ## Scope Boundaries
 
 - Do not write to, modify, or propose changes to KB files unless the developer explicitly asks you to update the KB.
-- Do not treat README.md as authoritative KB content — it is a human-facing document, not a rules or index file.
+- Do not treat human-facing setup or overview documents as authoritative KB content unless this knowledge base explicitly designates them as such.

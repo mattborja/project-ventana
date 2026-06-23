@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Matt Borja
+# See the repository root LICENSE file for the full license text.
+#
 # Project Ventana — Developer Onboarding (Linux / macOS)
 set -euo pipefail
 
@@ -39,52 +43,52 @@ echo ""
 # Knowledge base configuration
 # ---------------------------------------------------------------------------
 echo "Configure your knowledge base connection."
-echo "These values will be written into workspace/.vscode/mcp.json."
+echo "This value will be written into .vscode/mcp.json in the onboarding template."
 echo ""
 
-read -rp "  Git host URL (e.g. https://dev.azure.com/contoso): " HOST_URL
-read -rp "  Project name: "                                         PROJECT
-read -rp "  Repository name: "                                      REPO_NAME
+read -rp "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://git.example.com/your-org/your-repo.git): " REMOTE_URL
 
 MCP_JSON="$WORKSPACE_DIR/.vscode/mcp.json"
 
-node --input-type=commonjs - "$MCP_JSON" "$HOST_URL" "$PROJECT" "$REPO_NAME" <<'JSEOF'
+REMOTE_PARTS=$(node --input-type=commonjs -e "const u = new URL(process.argv[1]); console.log(`${u.protocol.slice(0, -1)} ${u.hostname}`)" "$REMOTE_URL" 2>/dev/null || true)
+if [ -z "$REMOTE_PARTS" ]; then
+  fail "GIT_REMOTE_URL must be a valid absolute URL."
+fi
+read -r GIT_PROTOCOL GIT_HOST <<<"$REMOTE_PARTS"
+
+node --input-type=commonjs - "$MCP_JSON" "$REMOTE_URL" <<'JSEOF'
 const fs   = require('fs');
 const file = process.argv[1];
 const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 for (const server of Object.values(data.servers)) {
-  server.env.GIT_HOST_URL = process.argv[2];
-  server.env.GIT_PROJECT  = process.argv[3];
-  server.env.GIT_REPO     = process.argv[4];
+  server.env.GIT_REMOTE_URL = process.argv[2];
 }
 fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 JSEOF
 
 echo ""
-echo "workspace/.vscode/mcp.json updated."
+echo ".vscode/mcp.json updated in onboarding template."
 
 # ---------------------------------------------------------------------------
 # Git credential helper — trigger initial authentication
 # ---------------------------------------------------------------------------
-GIT_HOST=$(echo "$HOST_URL" | sed 's|https://||' | cut -d/ -f1)
-
 echo ""
 echo "Authenticating with $GIT_HOST..."
 echo "A browser window or credential prompt may appear."
 echo ""
 
-printf 'protocol=https\nhost=%s\n\n' "$GIT_HOST" | git credential fill > /dev/null || true
+printf 'protocol=%s\nhost=%s\n\n' "$GIT_PROTOCOL" "$GIT_HOST" | git credential fill > /dev/null || true
 
 echo ""
 echo "======================================="
 echo "Onboarding complete."
 echo ""
 echo "Next steps:"
-echo "  1. Copy workspace/ contents into your project root."
+echo "  1. Copy the onboarding template contents into your project root."
 echo "  2. Open the project in VS Code."
 echo "  3. The ventana-kb MCP server will appear in the MCP panel."
 echo "  4. Open a Copilot or Claude chat and ask a question — the agent"
 echo "     will consult the knowledge base automatically."
 echo ""
-echo "Knowledge base: $HOST_URL/$PROJECT/_git/$REPO_NAME"
+echo "Knowledge base token: GIT_REMOTE_URL=$REMOTE_URL"
 echo ""

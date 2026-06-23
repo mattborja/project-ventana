@@ -2,6 +2,10 @@
 
 A proven agentic workflow framework that connects LLM agents to a shared enterprise knowledge base via a lightweight, stdio-based Model Context Protocol server — requiring no additional infrastructure beyond a Git repository and a Node.js runtime already present on each developer's machine.
 
+> **Status: Development**
+>
+> Project Ventana has progressed through **Research** and is currently in **Development** as this rebuild and iteration continues toward **Release** readiness.
+
 Presented by **[Matt Borja](https://linkedin.com/in/mattborja)** at **ACCTC 2026**, hosted by **Pima Community College**, week of June 22nd, 2026.
 
 > **Enabling an AI-Powered Workforce to Achieve Maximum Productivity**
@@ -9,6 +13,8 @@ Presented by **[Matt Borja](https://linkedin.com/in/mattborja)** at **ACCTC 2026
 > Demonstration of a proven, viable workflow that exploits the agentic capabilities of AI to accelerate teams in their research, development, and release of technical solutions at scale.
 
 ![GitHub Repository QR Code](qrcode-github.png)
+
+> **📄 Conference Slides:** [`slides.pdf`](slides.pdf) — placeholder available now; final slides will be committed here once ready. To be notified when the finalized deck and future updates are published, **Watch this repository** on GitHub (click **Watch → All Activity** or **Releases Only** at the top of the repo page).
 
 ---
 
@@ -24,7 +30,7 @@ This repository is a deployment template. It contains two self-contained compone
 
 | Directory | Deploy to | Purpose |
 |-----------|-----------|---------|
-| `server/` | Azure Repos (shared, hosted) | The knowledge base — curated content the LLM reads on every connection |
+| `server/` | A shared Git repository (GitHub, Azure Repos, etc.) | The knowledge base — curated content the LLM reads on every connection |
 | `client/` | Each developer's local machine | Onboarding scripts and workspace templates that wire up the MCP connection |
 
 Neither component depends on the other at the file-system level. `server/` is deployed once by a maintainer; `client/` is run once per developer machine.
@@ -35,45 +41,39 @@ Neither component depends on the other at the file-system level. `server/` is de
 
 ### What Gets Deployed
 
-The `server/` directory becomes the root of a dedicated Azure Repos Git repository. When deployed, its contents are:
+The `server/` directory is a **clean starter template** for a dedicated knowledge base repository on your chosen host (GitHub, Azure Repos, Bitbucket, Gitea, etc.). It intentionally ships without framework-specific domain content so teams can populate it only with their own authoritative knowledge. When deployed, the initial contents are:
 
 ```
-/INDEX.md                          ← Agent reads this first on every session
-/RULES.md                          ← Global rules the agent must follow
-/knowledge-base/
-  mcp/
-    INDEX.md                       ← Domain index
-    RULES.md                       ← Domain rules
-    stdio-implementation/
-      INDEX.md                     ← Subdomain index
-      RULES.md                     ← Subdomain rules
+/INDEX.md                          ← Starter root index; replace placeholder content
+/RULES.md                          ← Starter global rules; customize as needed
 ```
 
-The LLM agent accesses this repository over HTTPS via the MCP tools `list` and `read`. It never clones the repository — every connection retrieves the latest committed state directly from the remote.
+You then add your own domain folders under `/knowledge-base/` and update `/INDEX.md` to match. The LLM agent accesses this repository over HTTPS via the MCP tools `list` and `read`. It never clones the repository — every connection retrieves the latest committed state directly from the remote.
 
 ### Prerequisites
 
-- An Azure DevOps organization and project
-- Permission to create a new Git repository within that project
-- Intended consumers (developers) need at minimum **Reader** access to the repository
+- A Git hosting account (GitHub, Azure DevOps, Bitbucket, etc.)
+- Permission to create a new Git repository
+- Intended consumers (developers) need at minimum **read-only** access to the repository
 - Recommended: branch policy on `main` requiring pull requests with at least one approver, to enforce content review before changes go live
 
 ### Steps
 
-1. In Azure DevOps, create a new Git repository (e.g., `knowledge-base`) inside your project.
+1. On your Git host, create a new repository (e.g., `knowledge-base`).
 2. Copy the **contents** of `server/` — not the `server/` folder itself — into the root of that new repository.
-3. Commit and push to the `main` branch.
-4. Configure repository permissions:
-   - Knowledge base maintainers: **Contributor**
-   - Consuming developers: **Reader** (read-only; prevents unauthorized edits)
-5. Configure branch policies on `main`:
+3. Replace the placeholder text in `INDEX.md` and `RULES.md`, then add your first domain under `/knowledge-base/`.
+4. Commit and push to the `main` branch.
+5. Configure repository permissions:
+   - Knowledge base maintainers: **write** access
+   - Consuming developers: **read-only** access (prevents unauthorized edits)
+6. Configure branch policies on `main`:
    - Require a pull request for all changes
    - Add designated approvers or a reviewer group for content governance
-6. Record the repository URL (`https://dev.azure.com/{org}/{project}/_git/{repo}`). Developers will need this during client setup.
+7. Record the repository URL as `GIT_REMOTE_URL` (for example, `https://github.com/your-org/knowledge-base.git` or `https://dev.azure.com/your-org/your-project/_git/knowledge-base`). Developers will need this during client setup.
 
 ### Extending the Knowledge Base
 
-To add a new domain of knowledge:
+The starter template intentionally includes **no preloaded framework domains**. To add a new domain of knowledge:
 
 1. Create a directory at `/knowledge-base/{domain-name}/`
 2. Add `INDEX.md` (describe what the domain contains) and `RULES.md` (rules specific to this domain) at the domain root
@@ -100,7 +100,7 @@ The `client/onboarding/workspace/` directory contains the files that a developer
 | `CLAUDE.md` | Workspace root | Instructs Claude Code to consult the KB first |
 | `.github/copilot-instructions.md` | `.github/` | Instructs GitHub Copilot to consult the KB first |
 
-The MCP server authenticates against Azure Repos using credentials cached by Git Credential Manager (GCM). No tokens are stored in files; GCM transparently renews credentials against Microsoft Entra on each connection.
+The MCP server authenticates against the Git host using credentials cached by the developer's git credential helper (Git Credential Manager, osxkeychain, libsecret, etc.). No tokens are stored in files; the credential helper transparently manages authentication.
 
 ### Prerequisites
 
@@ -112,15 +112,13 @@ Each developer's machine needs:
 
 ### Steps
 
-**Step 1 — Configure Git host coordinates**
+**Step 1 — Configure Git remote URL**
 
 Open `client/onboarding/workspace/.vscode/mcp.json` and replace the placeholder values in the `env` block with the repository details from Part 1:
 
 ```json
 "env": {
-  "GIT_HOST_URL": "https://dev.azure.com/YOUR_ORG",
-  "GIT_PROJECT": "YOUR_PROJECT",
-  "GIT_REPO": "YOUR_REPO"
+  "GIT_REMOTE_URL": "<GIT_REMOTE_URL>"
 }
 ```
 
@@ -142,7 +140,7 @@ From the root of this repository:
 The script will:
 - Verify Node.js, npm, and Git prerequisites
 - Run `npm install` inside `client/onboarding/workspace/.vscode/mcp/`
-- Prompt for your Git host coordinates and write them into `.vscode/mcp.json`
+- Prompt for your Git remote URL and write it into `.vscode/mcp.json`
 - Trigger an initial GCM authentication against your Git host (a browser window or OS credential prompt may appear)
 
 **Step 3 — Copy workspace files into the developer's project**
@@ -169,13 +167,13 @@ In a Copilot or Claude chat window, ask:
 
 > "What domains are available in the knowledge base?"
 
-The agent should call `list("/")` and `read("/INDEX.md")` via the `ventana-kb` MCP tool and return a summary of the knowledge base contents.
+The agent should call `ventana-list("/")` and `ventana-read("/INDEX.md")` via the `ventana-kb` MCP tool and return a summary of the knowledge base contents.
 
 If the agent responds without invoking the MCP tool, check that:
 - `.vscode/mcp.json` is present in the workspace root
 - The `ventana-kb` server shows as active (not errored) in the MCP panel
-- The `GIT_HOST_URL`, `GIT_PROJECT`, and `GIT_REPO` values in `mcp.json` match the repository deployed in Part 1
-- GCM has a cached credential for the Azure DevOps host (`git credential fill` should return a password without prompting)
+- The `GIT_REMOTE_URL` value in `mcp.json` matches the repository deployed in Part 1
+- GCM has a cached credential for the configured Git host (`git credential fill` should return a password without prompting)
 
 ---
 
@@ -203,7 +201,7 @@ If the local context becomes a persistent, recurring need, add a standing refere
 - **Accuracy** — Models grounded in domain-specific, authoritative content produce output calibrated to the actual environment rather than trained approximations.
 - **Automation depth** — Teams using this pattern direct their agents to write and run tests, connect to databases and web applications, perform end-to-end and parity tests, and check for regressions — all within a single session.
 - **Infrastructure reach** — Permissions, sequenced deployment prerequisites, and artifact preparation can also be automated within this same agentic pipeline.
-- **Low overhead** — No centralized MCP gateway to operate. The stdio server runs locally on each developer's machine; access control is enforced entirely at the Azure Repos layer.
+- **Low overhead** — No centralized MCP gateway to operate. The stdio server runs locally on each developer's machine; access control is enforced entirely at the Git host layer.
 
 ---
 

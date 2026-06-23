@@ -1,32 +1,38 @@
 # Knowledge Base Index
 
-This is the root index of the knowledge base. Read this file first on every new session before querying any domain.
+Read this file first at the start of every new session before consulting any domain content.
 
 ## What This Knowledge Base Contains
 
-This repository is the authoritative knowledge base for the Project Ventana agentic workflow framework, maintained by Matt Borja. It is accessed by LLM agents over HTTPS via the Model Context Protocol — no local clone is required.
+Use this file as the root map for your team's knowledge base. Replace the placeholder sections below with a concise description of the repository's purpose, the subjects it covers, and the domain layout you want agents to follow.
 
 ## Root-Level Files
 
 | File | Purpose |
 |------|---------|
-| `INDEX.md` | This file — read first |
-| `RULES.md` | Global rules that govern all LLM agent interactions with this knowledge base |
+| `INDEX.md` | Root entry point for agents and human readers |
+| `RULES.md` | Global rules that apply across the entire knowledge base |
 
 ## Knowledge Base Domains
 
+Populate this table with your own domains after creating them.
+
 | Domain | Path | Description |
 |--------|------|-------------|
-| Model Context Protocol | `/knowledge-base/mcp/` | Concepts, implementation modes, and patterns for MCP in agentic workflows |
+| _(replace with your first domain)_ | `/knowledge-base/<domain>/` | Briefly describe what the domain covers |
 
 ## How to Navigate This Knowledge Base
 
 1. Read `/RULES.md` immediately after this file.
-2. Use `list("<domain-path>")` to explore a domain's contents.
-3. Read the domain's `INDEX.md` before reading any content files within it.
-4. If a subdomain exists, read its `INDEX.md` and `RULES.md` before proceeding into its content.
-5. Apply domain-specific `RULES.md` in addition to (not instead of) the global rules.
+2. Use `ventana-list("<domain-path>")` to explore the relevant domain.
+3. Read a domain's `INDEX.md` before relying on its content files.
+4. If a subdomain has its own `INDEX.md` or `RULES.md`, read those before proceeding.
+5. Apply domain-specific rules in addition to the global rules.
 
-## Adding New Domains
+## Getting Started for Maintainers
 
-To extend this knowledge base, create a new directory under `/knowledge-base/`, populate it with `INDEX.md` and `RULES.md`, and add it to the domain table above.
+1. Replace the placeholder text in this file with repository-specific guidance.
+2. Create one or more directories under `/knowledge-base/` for your domains.
+3. Add `INDEX.md` files where agents need navigation help.
+4. Add `RULES.md` files only where a domain needs extra rules beyond the global defaults.
+5. Update the domain table above whenever you add, remove, or reorganize a domain.
