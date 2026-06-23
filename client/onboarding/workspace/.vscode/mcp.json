@@ -5,9 +5,9 @@
       "command": "node",
       "args": ["${workspaceFolder}/.vscode/mcp/server.js"],
       "env": {
-        "GIT_HOST_URL": "https://GIT_HOST_URL",
-        "GIT_PROJECT": "GIT_PROJECT",
-        "GIT_REPO": "GIT_REPO"
+        "GIT_HOST_URL": "<GIT_HOST_URL>",
+        "GIT_PROJECT": "<GIT_PROJECT>",
+        "GIT_REPO": "<GIT_REPO>"
       }
     },
     "ventana-kb-py": {
@@ -15,9 +15,9 @@
       "command": "python3",
       "args": ["${workspaceFolder}/.vscode/mcp/server.py"],
       "env": {
-        "GIT_HOST_URL": "https://GIT_HOST_URL",
-        "GIT_PROJECT": "GIT_PROJECT",
-        "GIT_REPO": "GIT_REPO"
+        "GIT_HOST_URL": "<GIT_HOST_URL>",
+        "GIT_PROJECT": "<GIT_PROJECT>",
+        "GIT_REPO": "<GIT_REPO>"
       }
     }
   }

@@ -118,9 +118,9 @@ Open `client/onboarding/workspace/.vscode/mcp.json` and replace the placeholder 
 
 ```json
 "env": {
-  "GIT_HOST_URL": "https://GIT_HOST_URL",
-  "GIT_PROJECT": "GIT_PROJECT",
-  "GIT_REPO": "GIT_REPO"
+  "GIT_HOST_URL": "<GIT_HOST_URL>",
+  "GIT_PROJECT": "<GIT_PROJECT>",
+  "GIT_REPO": "<GIT_REPO>"
 }
 ```
 
