@@ -62,6 +62,12 @@ test('Generic HTTPS Git URL is parsed correctly', () => {
   assert.equal(r.origin, 'https://git.example.com');
 });
 
+test('userinfo is excluded from origin fields', () => {
+  const r = parseRemoteUrl('https://user@git.example.com:8443/org/myrepo.git');
+  assert.equal(r.origin, 'https://git.example.com:8443');
+  assert.equal(r.orgUrl, 'https://git.example.com:8443');
+});
+
 test('Localhost HTTP URL is permitted', () => {
   const r = parseRemoteUrl('http://localhost:8787/org/myrepo');
   assert.equal(r.protocol, 'http');

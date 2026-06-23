@@ -55,7 +55,7 @@ The server auto-detects the Git provider from the remote URL and uses the approp
 
 ### Other providers
 
-For Git hosts that are not auto-detected, supply `GIT_LIST_API_URL_TEMPLATE` and `GIT_READ_API_URL_TEMPLATE` to map `list` and `read` requests to your provider-specific REST endpoints.
+For Git hosts that are not auto-detected, supply `GIT_LIST_API_URL_TEMPLATE` and `GIT_READ_API_URL_TEMPLATE` to map `list` and `read` requests to compatible provider-specific REST endpoints. The current implementations understand GitHub Contents API responses for GitHub-style remotes and Azure Repos Items API responses for template-driven listing; custom templates should therefore return Azure Items-style listing JSON and raw file bytes for reads unless you also extend the parser.
 
 ## Dependencies
 

@@ -2,6 +2,10 @@
 
 A proven agentic workflow framework that connects LLM agents to a shared enterprise knowledge base via a lightweight, stdio-based Model Context Protocol server — requiring no additional infrastructure beyond a Git repository and a Node.js runtime already present on each developer's machine.
 
+> **Status: Development**
+>
+> Project Ventana has progressed through **Research** and is currently in **Development** as this rebuild and iteration continues toward **Release** readiness.
+
 Presented by **[Matt Borja](https://linkedin.com/in/mattborja)** at **ACCTC 2026**, hosted by **Pima Community College**, week of June 22nd, 2026.
 
 > **Enabling an AI-Powered Workforce to Achieve Maximum Productivity**
@@ -100,7 +104,7 @@ The `client/onboarding/workspace/` directory contains the files that a developer
 | `CLAUDE.md` | Workspace root | Instructs Claude Code to consult the KB first |
 | `.github/copilot-instructions.md` | `.github/` | Instructs GitHub Copilot to consult the KB first |
 
-The MCP server authenticates against the Git host using credentials cached by the developer's git credential helper (Git Credential Manager, SSH keys, etc.). No tokens are stored in files; the credential helper transparently manages authentication.
+The MCP server authenticates against the Git host using credentials cached by the developer's git credential helper (Git Credential Manager, osxkeychain, libsecret, etc.). No tokens are stored in files; the credential helper transparently manages authentication.
 
 ### Prerequisites
 

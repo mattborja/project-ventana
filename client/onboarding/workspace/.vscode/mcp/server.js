@@ -9,7 +9,7 @@ import {
 import { execFileSync } from 'child_process';
 import http from 'http';
 import https from 'https';
-import { fileURLToPath, pathToFileURL, URL } from 'url';
+import { pathToFileURL, URL } from 'url';
 
 // ---------------------------------------------------------------------------
 // Configuration — set these in .vscode/mcp.json or as environment variables
@@ -149,6 +149,10 @@ function providerError(templateName) {
   );
 }
 
+function encodePathPreservingSlashes(value) {
+  return encodeURIComponent(value).replace(/%2F/g, '/');
+}
+
 function interpolateTemplate(template, values) {
   const encodedKeys = new Set(['path', 'scopePath']);
   return template.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, (_match, key) => {
@@ -156,7 +160,7 @@ function interpolateTemplate(template, values) {
       throw new Error(`Unknown URL template token: {${key}}`);
     }
     const value = `${values[key]}`;
-    return encodedKeys.has(key) ? encodeURIComponent(value).replace(/%2F/g, '/') : value;
+    return encodedKeys.has(key) ? encodePathPreservingSlashes(value) : value;
   });
 }
 
@@ -174,7 +178,7 @@ async function listPath(scopePath = '/') {
     azureUrl.searchParams.set('api-version', API_VER);
     url = azureUrl.toString();
   } else if (repository.isGitHubRemote) {
-    const contentsPath = scopePath === '/' ? '' : scopePath.replace(/^\//, '').replace(/\/$/, '');
+    const contentsPath = scopePath === '/' ? '' : encodePathPreservingSlashes(scopePath.replace(/^\//, '').replace(/\/$/, ''));
     url = `https://api.github.com/repos/${repository.namespace}/${repository.repo}/contents/${contentsPath}`;
   } else {
     providerError('GIT_LIST_API_URL_TEMPLATE');
@@ -212,7 +216,7 @@ async function readPath(path) {
     azureUrl.searchParams.set('api-version', API_VER);
     url = azureUrl.toString();
   } else if (repository.isGitHubRemote) {
-    const filePath = path.replace(/^\//, '');
+    const filePath = encodePathPreservingSlashes(path.replace(/^\//, ''));
     url = `https://api.github.com/repos/${repository.namespace}/${repository.repo}/contents/${filePath}`;
   } else {
     providerError('GIT_READ_API_URL_TEMPLATE');

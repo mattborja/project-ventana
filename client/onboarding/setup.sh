@@ -46,6 +46,12 @@ read -rp "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://git.example.com/
 
 MCP_JSON="$WORKSPACE_DIR/.vscode/mcp.json"
 
+REMOTE_PARTS=$(node --input-type=commonjs -e "const u = new URL(process.argv[1]); console.log(`${u.protocol.slice(0, -1)} ${u.hostname}`)" "$REMOTE_URL" 2>/dev/null || true)
+if [ -z "$REMOTE_PARTS" ]; then
+  fail "GIT_REMOTE_URL must be a valid absolute URL."
+fi
+read -r GIT_PROTOCOL GIT_HOST <<<"$REMOTE_PARTS"
+
 node --input-type=commonjs - "$MCP_JSON" "$REMOTE_URL" <<'JSEOF'
 const fs   = require('fs');
 const file = process.argv[1];
@@ -62,17 +68,12 @@ echo ".vscode/mcp.json updated in onboarding template."
 # ---------------------------------------------------------------------------
 # Git credential helper — trigger initial authentication
 # ---------------------------------------------------------------------------
-GIT_HOST=$(node --input-type=commonjs -e "console.log(new URL(process.argv[1]).hostname)" "$REMOTE_URL" 2>/dev/null || true)
-if [ -z "$GIT_HOST" ]; then
-  fail "GIT_REMOTE_URL must be a valid absolute URL."
-fi
-
 echo ""
 echo "Authenticating with $GIT_HOST..."
 echo "A browser window or credential prompt may appear."
 echo ""
 
-printf 'protocol=https\nhost=%s\n\n' "$GIT_HOST" | git credential fill > /dev/null || true
+printf 'protocol=%s\nhost=%s\n\n' "$GIT_PROTOCOL" "$GIT_HOST" | git credential fill > /dev/null || true
 
 echo ""
 echo "======================================="

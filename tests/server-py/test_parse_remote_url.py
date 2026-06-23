@@ -86,6 +86,11 @@ class TestNonAzureUrls(unittest.TestCase):
         self.assertEqual(r['namespace'], 'org/suborg')
         self.assertEqual(r['origin'], 'https://git.example.com')
 
+    def test_userinfo_is_excluded_from_origin_fields(self):
+        r = parse_remote_url('https://user@git.example.com:8443/org/myrepo.git')
+        self.assertEqual(r['origin'], 'https://git.example.com:8443')
+        self.assertEqual(r['org_url'], 'https://git.example.com:8443')
+
     def test_localhost_http_is_permitted(self):
         r = parse_remote_url('http://localhost:8787/org/myrepo')
         self.assertEqual(r['protocol'], 'http')

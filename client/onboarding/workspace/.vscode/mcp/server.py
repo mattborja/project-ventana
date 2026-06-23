@@ -50,12 +50,18 @@ def parse_remote_url(remote_url: str) -> dict:
     org_path = "/".join(segments[: azure_git_index - 1]) if is_azure_remote else ""
     project = segments[azure_git_index - 1] if is_azure_remote else ""
     is_github_remote = parsed.hostname == "github.com"
+    origin_host = parsed.hostname
+    if ":" in origin_host and not origin_host.startswith("["):
+        origin_host = f"[{origin_host}]"
+    if parsed.port:
+        origin_host = f"{origin_host}:{parsed.port}"
+    origin = f"{parsed.scheme}://{origin_host}"
     return {
         "host": parsed.hostname,
         "protocol": parsed.scheme,  # 'https' or 'http'
-        "origin": f"{parsed.scheme}://{parsed.netloc}",
+        "origin": origin,
         "namespace": "/".join(segments[:git_segment_index]) if is_azure_remote else "/".join(segments[:-1]),
-        "org_url": f"{parsed.scheme}://{parsed.netloc}/{org_path}" if is_azure_remote else f"{parsed.scheme}://{parsed.netloc}",
+        "org_url": f"{origin}/{org_path}" if is_azure_remote else origin,
         "project": project,
         "repo": repo,
         "is_azure_remote": is_azure_remote,
@@ -144,6 +150,10 @@ def provider_error(template_name: str) -> NoReturn:
     )
 
 
+def encode_path_preserving_slashes(value: str) -> str:
+    return urllib.parse.quote(value, safe="/")
+
+
 def interpolate_template(template: str, values: dict[str, str]) -> str:
     encoded_keys = {"path", "scopePath"}
 
@@ -152,7 +162,7 @@ def interpolate_template(template: str, values: dict[str, str]) -> str:
         if key not in values:
             raise RuntimeError(f"Unknown URL template token: {{{key}}}")
         value = str(values[key])
-        return urllib.parse.quote(value, safe="/") if key in encoded_keys else value
+        return encode_path_preserving_slashes(value) if key in encoded_keys else value
 
     return re.sub(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}", replace, template)
 
@@ -173,7 +183,7 @@ def list_path(scope_path: str = "/") -> list[dict]:
         })
         url = f"{repo_base()}/items?{params}"
     elif repository["is_github_remote"]:
-        contents_path = "" if scope_path == "/" else scope_path.strip("/")
+        contents_path = "" if scope_path == "/" else encode_path_preserving_slashes(scope_path.strip("/"))
         url = f"https://api.github.com/repos/{repository['namespace']}/{repository['repo']}/contents/{contents_path}"
     else:
         provider_error("GIT_LIST_API_URL_TEMPLATE")
@@ -206,7 +216,7 @@ def read_path(path: str) -> str:
         params = urllib.parse.urlencode({"path": path, "api-version": API_VER})
         url = f"{repo_base()}/items?{params}"
     elif repository["is_github_remote"]:
-        file_path = path.lstrip("/")
+        file_path = encode_path_preserving_slashes(path.lstrip("/"))
         url = f"https://api.github.com/repos/{repository['namespace']}/{repository['repo']}/contents/{file_path}"
     else:
         provider_error("GIT_READ_API_URL_TEMPLATE")

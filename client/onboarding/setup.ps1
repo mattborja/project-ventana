@@ -58,6 +58,15 @@ Write-Host ""
 
 $RemoteUrl = Read-Host "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://git.example.com/your-org/your-repo.git)"
 
+try {
+    $RemoteUri = [uri]$RemoteUrl
+    if (-not $RemoteUri.IsAbsoluteUri -or -not $RemoteUri.Host) {
+        throw
+    }
+} catch {
+    throw "GIT_REMOTE_URL must be a valid absolute URL."
+}
+
 $McpJsonPath = Join-Path $WorkspaceDir '.vscode\mcp.json'
 $McpJson = Get-Content $McpJsonPath -Raw | ConvertFrom-Json
 foreach ($server in $McpJson.servers.PSObject.Properties) {
@@ -71,7 +80,8 @@ Write-Host ".vscode\mcp.json updated in onboarding template." -ForegroundColor G
 # ---------------------------------------------------------------------------
 # Git credential helper — trigger initial authentication
 # ---------------------------------------------------------------------------
-$GitHost = ([uri]$RemoteUrl).Host
+$GitHost = $RemoteUri.Host
+$GitProtocol = $RemoteUri.Scheme
 
 Write-Host ""
 Write-Host "Authenticating with $GitHost..."
@@ -79,7 +89,7 @@ Write-Host "A browser window or credential prompt may appear."
 Write-Host ""
 
 try {
-    "protocol=https`nhost=$GitHost`n`n" | git credential fill 2>$null | Out-Null
+    "protocol=$GitProtocol`nhost=$GitHost`n`n" | git credential fill 2>$null | Out-Null
 } catch {
     Write-Warning "Credential pre-fetch failed — you will be prompted on first MCP connection."
 }
