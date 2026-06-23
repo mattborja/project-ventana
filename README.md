@@ -1,20 +1,13 @@
 # Project Ventana
+> **Status: Development**
 
 A proven agentic workflow framework that connects LLM agents to a shared enterprise knowledge base via a lightweight, stdio-based Model Context Protocol server — requiring no additional infrastructure beyond a Git repository and a runtime (Node.js or Python) already present on each developer's machine.
 
-> **Status: Development**
->
-> Project Ventana has progressed through **Research** and is currently in **Development** as this rebuild and iteration continues toward **Release** readiness.
-
 Presented by **[Matt Borja](https://linkedin.com/in/mattborja)** at **ACCTC 2026**, hosted by **Pima Community College**, week of June 22nd, 2026.
-
-> **Enabling an AI-Powered Workforce to Achieve Maximum Productivity**
-> 
-> Demonstration of a proven, viable workflow that exploits the agentic capabilities of AI to accelerate teams in their research, development, and release of technical solutions at scale.
 
 ![GitHub Repository QR Code](qrcode-github.png)
 
-> **📄 Conference Slides:** [`slides.pdf`](slides.pdf) — placeholder available now; final slides will be committed here once ready. To be notified when the finalized deck and future updates are published, **Watch this repository** on GitHub (click **Watch → All Activity** or **Releases Only** at the top of the repo page).
+**📄 Download conference slides:** [`slides.pdf`](slides.pdf)
 
 ---
 
