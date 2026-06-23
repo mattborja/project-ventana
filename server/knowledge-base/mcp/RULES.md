@@ -7,7 +7,7 @@ These rules apply when querying or generating content within the `/knowledge-bas
 This domain is authoritative for:
 - MCP concepts as they relate to Project Ventana
 - The stdio implementation used in this framework
-- Azure DevOps REST API authentication via GCM
+- Git host REST API authentication via GCM
 - Tool definitions (`list`, `read`) and their expected behavior
 
 This domain is **not** authoritative for:

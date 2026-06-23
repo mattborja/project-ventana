@@ -12,7 +12,7 @@ This domain covers the Model Context Protocol as it applies to the Project Venta
 
 ## Domain Summary
 
-MCP is the transport layer between an LLM agent and an external resource — in this case, the knowledge base repository hosted on Azure DevOps. It defines how tools are declared, how requests are routed, and how responses are returned.
+MCP is the transport layer between an LLM agent and an external resource — in this case, the knowledge base repository hosted on a remote Git server. It defines how tools are declared, how requests are routed, and how responses are returned.
 
 ### Implementation Modes
 

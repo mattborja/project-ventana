@@ -9,7 +9,7 @@ import {
 import { execFileSync } from 'child_process';
 import http from 'http';
 import https from 'https';
-import { URL } from 'url';
+import { fileURLToPath, URL } from 'url';
 
 // ---------------------------------------------------------------------------
 // Configuration — set these in .vscode/mcp.json or as environment variables
@@ -274,6 +274,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-validateConfig();
-const transport = new StdioServerTransport();
-await server.connect(transport);
+export { parseRemoteUrl, interpolateTemplate };
+
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  validateConfig();
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}

@@ -22,7 +22,7 @@ Each developer needs the following before running onboarding:
 | **Node.js ≥ 18** _(if using the JS server)_ | Download from [nodejs.org](https://nodejs.org) |
 | **Python ≥ 3.10** _(if using the Python server)_ | Download from [python.org](https://python.org) |
 | **VS Code** | The MCP server registration in `mcp.json` targets VS Code's MCP panel |
-| **KB connection details** | The host URL, project name, and repository name — provided by whoever deployed the shared knowledge base repository |
+| **KB connection details** | The Git remote URL (`GIT_REMOTE_URL`) of the knowledge base repository — provided by whoever deployed it |
 
 Only one of Node.js or Python is required depending on which MCP server variant the developer chooses to use.
 
