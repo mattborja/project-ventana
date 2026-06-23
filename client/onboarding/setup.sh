@@ -39,7 +39,7 @@ echo ""
 # Knowledge base configuration
 # ---------------------------------------------------------------------------
 echo "Configure your knowledge base connection."
-echo "These values will be written into workspace/.vscode/mcp.json."
+echo "This value will be written into .vscode/mcp.json in the onboarding template."
 echo ""
 
 read -rp "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://git.example.com/your-org/your-repo.git): " REMOTE_URL
@@ -57,7 +57,7 @@ fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 JSEOF
 
 echo ""
-echo "workspace/.vscode/mcp.json updated."
+echo ".vscode/mcp.json updated in onboarding template."
 
 # ---------------------------------------------------------------------------
 # Git credential helper — trigger initial authentication
@@ -79,7 +79,7 @@ echo "======================================="
 echo "Onboarding complete."
 echo ""
 echo "Next steps:"
-echo "  1. Copy workspace/ contents into your project root."
+echo "  1. Copy the onboarding template contents into your project root."
 echo "  2. Open the project in VS Code."
 echo "  3. The ventana-kb MCP server will appear in the MCP panel."
 echo "  4. Open a Copilot or Claude chat and ask a question — the agent"
