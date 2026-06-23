@@ -243,7 +243,7 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
-      name: 'list',
+      name: 'ventana-list',
       description:
         'List the contents of a path in the knowledge base repository. ' +
         'Returns an array of { path, type } objects where type is "file" or "folder". ' +
@@ -260,7 +260,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
-      name: 'read',
+      name: 'ventana-read',
       description:
         'Read the contents of a file in the knowledge base repository. ' +
         'Use this to retrieve INDEX.md, RULES.md, and any domain content files.',
@@ -282,12 +282,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
-    if (name === 'list') {
+    if (name === 'ventana-list') {
       const items = await listPath(args?.path ?? '/');
       return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
     }
 
-    if (name === 'read') {
+    if (name === 'ventana-read') {
       if (!args?.path) return {
         isError: true,
         content: [{ type: 'text', text: 'Error: path argument is required' }],

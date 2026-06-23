@@ -239,7 +239,7 @@ app = Server("ventana-kb")
 async def handle_list_tools() -> list[Tool]:
     return [
         Tool(
-            name="list",
+            name="ventana-list",
             description=(
                 "List the contents of a path in the knowledge base repository. "
                 "Returns an array of {path, type} objects where type is 'file' or 'folder'. "
@@ -257,7 +257,7 @@ async def handle_list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="read",
+            name="ventana-read",
             description=(
                 "Read the contents of a file in the knowledge base repository. "
                 "Use this to retrieve INDEX.md, RULES.md, and any domain content files."
@@ -279,10 +279,10 @@ async def handle_list_tools() -> list[Tool]:
 @app.call_tool()
 async def handle_call_tool(name: str, arguments: dict) -> CallToolResult:
     try:
-        if name == "list":
+        if name == "ventana-list":
             items = list_path(arguments.get("path", "/"))
             return CallToolResult(content=[TextContent(type="text", text=json.dumps(items, indent=2))])
-        if name == "read":
+        if name == "ventana-read":
             path = arguments.get("path")
             if not path:
                 return CallToolResult(
