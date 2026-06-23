@@ -24,7 +24,7 @@ function parseRemoteUrl(remoteUrl) {
   try {
     parsed = new URL(remoteUrl);
   } catch {
-    throw new Error('GIT_REMOTE_URL must be a valid HTTPS remote URL');
+    throw new Error('GIT_REMOTE_URL must be a valid absolute URL (e.g. https://git.example.com/org/repo.git)');
   }
   const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
   if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && isLocalhost)) {

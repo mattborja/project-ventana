@@ -28,7 +28,7 @@ REPOSITORY_INFO: dict | None = None
 def parse_remote_url(remote_url: str) -> dict:
     parsed = urllib.parse.urlparse(remote_url)
     if not parsed.scheme or not parsed.netloc:
-        raise ValueError("GIT_REMOTE_URL must be a valid URL")
+        raise ValueError("GIT_REMOTE_URL must include both a scheme (http/https) and a host")
     is_localhost = parsed.hostname in ("localhost", "127.0.0.1", "::1")
     if parsed.scheme != "https" and not (parsed.scheme == "http" and is_localhost):
         raise ValueError("GIT_REMOTE_URL must use HTTPS (HTTP is only allowed for localhost)")
