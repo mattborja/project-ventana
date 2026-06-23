@@ -18,31 +18,38 @@ from mcp.types import CallToolResult, TextContent, Tool
 # ---------------------------------------------------------------------------
 GIT_REMOTE_URL = os.environ.get("GIT_REMOTE_URL", "")
 API_VER = "7.1"
+GIT_LIST_API_URL_TEMPLATE = os.environ.get("GIT_LIST_API_URL_TEMPLATE", "")
+GIT_READ_API_URL_TEMPLATE = os.environ.get("GIT_READ_API_URL_TEMPLATE", "")
 REPO_COORDS: dict | None = None
 
 
 def parse_remote_url(remote_url: str) -> dict:
     parsed = urllib.parse.urlparse(remote_url)
     if not parsed.scheme or not parsed.netloc:
-        raise ValueError("GIT_REMOTE_URL must be a valid Azure Repos HTTPS remote URL")
+        raise ValueError("GIT_REMOTE_URL must be a valid HTTPS remote URL")
     if parsed.scheme != "https":
         raise ValueError("GIT_REMOTE_URL must use HTTPS")
 
     segments = [segment for segment in parsed.path.split("/") if segment]
-    try:
-        git_index = segments.index("_git")
-    except ValueError as exc:
-        raise ValueError("GIT_REMOTE_URL must use Azure Repos path format /{org}/{project}/_git/{repo}") from exc
+    if not segments:
+        raise ValueError("GIT_REMOTE_URL must include a repository path")
 
-    if git_index < 2 or git_index + 1 >= len(segments):
-        raise ValueError("GIT_REMOTE_URL must use Azure Repos path format /{org}/{project}/_git/{repo}")
+    repo = segments[-1].removesuffix(".git")
+    if not repo:
+        raise ValueError("GIT_REMOTE_URL must include a repository name")
 
-    org_path = "/".join(segments[: git_index - 1])
+    git_index = len(segments) - 2 if len(segments) >= 2 and segments[-2] == "_git" else -1
+    is_azure_remote = git_index >= 1
+    org_path = "/".join(segments[: git_index - 1]) if is_azure_remote else ""
+    project = segments[git_index - 1] if is_azure_remote else ""
     return {
         "host": parsed.hostname,
+        "origin": f"{parsed.scheme}://{parsed.netloc}",
+        "namespace": "/".join(segments[:-1]),
         "org_url": f"{parsed.scheme}://{parsed.netloc}/{org_path}",
-        "project": segments[git_index - 1],
-        "repo": segments[git_index + 1].removesuffix(".git"),
+        "project": project,
+        "repo": repo,
+        "is_azure_remote": is_azure_remote,
     }
 
 
@@ -110,13 +117,42 @@ def repo_base() -> str:
     )
 
 
+def provider_error(template_name: str) -> None:
+    raise RuntimeError(
+        f"No default API mapping found for this remote URL. Set {template_name} for your Git provider."
+    )
+
+
+def interpolate_template(template: str, values: dict[str, str]) -> str:
+    def replace(match: "re.Match[str]") -> str:
+        key = match.group(1)
+        if key not in values:
+            raise RuntimeError(f"Unknown URL template token: {{{key}}}")
+        return str(values[key])
+
+    import re
+
+    return re.sub(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}", replace, template)
+
+
 def list_path(scope_path: str = "/") -> list[dict]:
-    params = urllib.parse.urlencode({
-        "scopePath":      scope_path,
-        "recursionLevel": "OneLevel",
-        "api-version":    API_VER,
-    })
-    body = https_get(f"{repo_base()}/items?{params}", auth_header())
+    coords = repo_coords()
+    if GIT_LIST_API_URL_TEMPLATE:
+        url = interpolate_template(
+            GIT_LIST_API_URL_TEMPLATE,
+            {**coords, "scopePath": scope_path, "apiVersion": API_VER},
+        )
+    elif coords["is_azure_remote"]:
+        params = urllib.parse.urlencode({
+            "scopePath": scope_path,
+            "recursionLevel": "OneLevel",
+            "api-version": API_VER,
+        })
+        url = f"{repo_base()}/items?{params}"
+    else:
+        provider_error("GIT_LIST_API_URL_TEMPLATE")
+
+    body = https_get(url, auth_header())
     data = json.loads(body)
     return [
         {"path": item["path"], "type": "folder" if item.get("isFolder") else "file"}
@@ -126,11 +162,19 @@ def list_path(scope_path: str = "/") -> list[dict]:
 
 
 def read_path(path: str) -> str:
-    params = urllib.parse.urlencode({"path": path, "api-version": API_VER})
-    body = https_get(
-        f"{repo_base()}/items?{params}",
-        {**auth_header(), "Accept": "application/octet-stream"},
-    )
+    coords = repo_coords()
+    if GIT_READ_API_URL_TEMPLATE:
+        url = interpolate_template(
+            GIT_READ_API_URL_TEMPLATE,
+            {**coords, "path": path, "apiVersion": API_VER},
+        )
+    elif coords["is_azure_remote"]:
+        params = urllib.parse.urlencode({"path": path, "api-version": API_VER})
+        url = f"{repo_base()}/items?{params}"
+    else:
+        provider_error("GIT_READ_API_URL_TEMPLATE")
+
+    body = https_get(url, {**auth_header(), "Accept": "application/octet-stream"})
     return body.decode("utf-8")
 
 

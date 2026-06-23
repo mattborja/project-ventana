@@ -56,7 +56,7 @@ Write-Host "Configure your knowledge base connection."
 Write-Host "These values will be written into workspace\.vscode\mcp.json."
 Write-Host ""
 
-$RemoteUrl = Read-Host "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://dev.azure.com/your-org/your-project/_git/your-repo)"
+$RemoteUrl = Read-Host "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://git.example.com/your-org/your-repo.git)"
 
 $McpJsonPath = Join-Path $WorkspaceDir '.vscode\mcp.json'
 $McpJson = Get-Content $McpJsonPath -Raw | ConvertFrom-Json

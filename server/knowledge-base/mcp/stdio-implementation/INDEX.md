@@ -22,7 +22,9 @@ The server is configured entirely through environment variables, supplied via `.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `GIT_REMOTE_URL` | HTTPS remote URL of the knowledge base repository | `https://dev.azure.com/your-org/your-project/_git/knowledge-base` |
+| `GIT_REMOTE_URL` | HTTPS remote URL of the knowledge base repository | `https://git.example.com/your-org/knowledge-base.git` |
+| `GIT_LIST_API_URL_TEMPLATE` *(optional)* | List endpoint template for non-default Git host APIs. Supported template tokens: `{origin}`, `{host}`, `{namespace}`, `{repo}`, `{scopePath}`, `{apiVersion}`. | `https://api.example.com/repos/{namespace}/{repo}/tree?path={scopePath}` |
+| `GIT_READ_API_URL_TEMPLATE` *(optional)* | Read endpoint template for non-default Git host APIs. Supported template tokens: `{origin}`, `{host}`, `{namespace}`, `{repo}`, `{path}`, `{apiVersion}`. | `https://api.example.com/repos/{namespace}/{repo}/raw?path={path}` |
 
 The server validates `GIT_REMOTE_URL` at startup and exits with a descriptive error if it is missing or malformed.
 
@@ -35,7 +37,7 @@ The server validates `GIT_REMOTE_URL` at startup and exits with a descriptive er
 
 ## Git Host REST Endpoints Used
 
-The implementation targets the Azure DevOps Items REST API. Adapt the `repoBase()` / `repo_base()` function if deploying against a different Git host REST interface.
+When the remote URL is in Azure Repos format, the server uses the Azure Items REST API by default. For other Git providers, supply `GIT_LIST_API_URL_TEMPLATE` and `GIT_READ_API_URL_TEMPLATE` to map `list` and `read` requests to your provider-specific REST endpoints.
 
 | Operation | Endpoint |
 |-----------|----------|

@@ -42,7 +42,7 @@ echo "Configure your knowledge base connection."
 echo "These values will be written into workspace/.vscode/mcp.json."
 echo ""
 
-read -rp "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://dev.azure.com/your-org/your-project/_git/your-repo): " REMOTE_URL
+read -rp "  Git remote URL (token: GIT_REMOTE_URL, e.g. https://git.example.com/your-org/your-repo.git): " REMOTE_URL
 
 MCP_JSON="$WORKSPACE_DIR/.vscode/mcp.json"
 

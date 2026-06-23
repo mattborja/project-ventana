@@ -15,32 +15,43 @@ import { URL } from 'url';
 // ---------------------------------------------------------------------------
 const GIT_REMOTE_URL = process.env.GIT_REMOTE_URL ?? '';
 const API_VER = '7.1';
+const GIT_LIST_API_URL_TEMPLATE = process.env.GIT_LIST_API_URL_TEMPLATE ?? '';
+const GIT_READ_API_URL_TEMPLATE = process.env.GIT_READ_API_URL_TEMPLATE ?? '';
 
 function parseRemoteUrl(remoteUrl) {
   let parsed;
   try {
     parsed = new URL(remoteUrl);
   } catch {
-    throw new Error('GIT_REMOTE_URL must be a valid Azure Repos HTTPS remote URL');
+    throw new Error('GIT_REMOTE_URL must be a valid HTTPS remote URL');
   }
   if (parsed.protocol !== 'https:') {
     throw new Error('GIT_REMOTE_URL must use HTTPS');
   }
+
   const segments = parsed.pathname.split('/').filter(Boolean);
-  const gitIndex = segments.indexOf('_git');
-  if (gitIndex < 2 || gitIndex + 1 >= segments.length) {
-    throw new Error('GIT_REMOTE_URL must use Azure Repos path format /{org}/{project}/_git/{repo}');
+  if (!segments.length) {
+    throw new Error('GIT_REMOTE_URL must include a repository path');
   }
 
-  const orgPath = segments.slice(0, gitIndex - 1).join('/');
-  const project = segments[gitIndex - 1];
-  const repo = segments[gitIndex + 1].replace(/\.git$/, '');
+  const repo = segments.at(-1).replace(/\.git$/, '');
+  if (!repo) {
+    throw new Error('GIT_REMOTE_URL must include a repository name');
+  }
+
+  const gitIndex = segments.lastIndexOf('_git');
+  const isAzureRemote = gitIndex >= 1 && gitIndex + 1 === segments.length - 1;
+  const orgPath = isAzureRemote ? segments.slice(0, gitIndex - 1).join('/') : '';
+  const project = isAzureRemote ? segments[gitIndex - 1] : '';
 
   return {
     host: parsed.hostname,
+    origin: parsed.origin,
+    namespace: segments.slice(0, -1).join('/'),
     orgUrl: `${parsed.origin}/${orgPath}`,
     project,
     repo,
+    isAzureRemote,
   };
 }
 
@@ -116,14 +127,37 @@ function repoBase() {
   return `${orgUrl}/${encodeURIComponent(project)}/_apis/git/repositories/${encodeURIComponent(repo)}`;
 }
 
+function providerError(templateName) {
+  throw new Error(
+    `No default API mapping found for this remote URL. Set ${templateName} for your Git provider.`
+  );
+}
+
+function interpolateTemplate(template, values) {
+  return template.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, (_, key) => {
+    if (!(key in values)) {
+      throw new Error(`Unknown URL template token: {${key}}`);
+    }
+    return values[key];
+  });
+}
+
 // list — returns immediate children of a path
 async function listPath(scopePath = '/') {
-  const url = new URL(`${repoBase()}/items`);
-  url.searchParams.set('scopePath', scopePath);
-  url.searchParams.set('recursionLevel', 'OneLevel');
-  url.searchParams.set('api-version', API_VER);
+  const coords = repoCoords();
+  const url = GIT_LIST_API_URL_TEMPLATE
+    ? interpolateTemplate(GIT_LIST_API_URL_TEMPLATE, { ...coords, scopePath, apiVersion: API_VER })
+    : coords.isAzureRemote
+      ? (() => {
+          const azureUrl = new URL(`${repoBase()}/items`);
+          azureUrl.searchParams.set('scopePath', scopePath);
+          azureUrl.searchParams.set('recursionLevel', 'OneLevel');
+          azureUrl.searchParams.set('api-version', API_VER);
+          return azureUrl.toString();
+        })()
+      : providerError('GIT_LIST_API_URL_TEMPLATE');
 
-  const { body } = await httpsGet(url.toString(), authHeader());
+  const { body } = await httpsGet(url, authHeader());
   const data = JSON.parse(body);
 
   return (data.value ?? [])
@@ -137,11 +171,19 @@ async function listPath(scopePath = '/') {
 
 // read — returns raw file content
 async function readPath(path) {
-  const url = new URL(`${repoBase()}/items`);
-  url.searchParams.set('path', path);
-  url.searchParams.set('api-version', API_VER);
+  const coords = repoCoords();
+  const url = GIT_READ_API_URL_TEMPLATE
+    ? interpolateTemplate(GIT_READ_API_URL_TEMPLATE, { ...coords, path, apiVersion: API_VER })
+    : coords.isAzureRemote
+      ? (() => {
+          const azureUrl = new URL(`${repoBase()}/items`);
+          azureUrl.searchParams.set('path', path);
+          azureUrl.searchParams.set('api-version', API_VER);
+          return azureUrl.toString();
+        })()
+      : providerError('GIT_READ_API_URL_TEMPLATE');
 
-  const { body } = await httpsGet(url.toString(), {
+  const { body } = await httpsGet(url, {
     ...authHeader(),
     Accept: 'application/octet-stream',
   });
