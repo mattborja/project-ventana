@@ -53,8 +53,8 @@ def parse_remote_url(remote_url: str) -> dict:
         "host": parsed.hostname,
         "protocol": parsed.scheme,  # 'https' or 'http'
         "origin": f"{parsed.scheme}://{parsed.netloc}",
-        "namespace": "/".join(segments[:-1]),
-        "org_url": f"{parsed.scheme}://{parsed.netloc}/{org_path}",
+        "namespace": "/".join(segments[:git_segment_index]) if is_azure_remote else "/".join(segments[:-1]),
+        "org_url": f"{parsed.scheme}://{parsed.netloc}/{org_path}" if is_azure_remote else f"{parsed.scheme}://{parsed.netloc}",
         "project": project,
         "repo": repo,
         "is_azure_remote": is_azure_remote,
@@ -108,6 +108,10 @@ def auth_header() -> dict:
 # Git host REST helpers
 # ---------------------------------------------------------------------------
 def api_get(url: str, headers: dict | None = None) -> bytes:
+    parsed_url = urllib.parse.urlparse(url)
+    is_localhost = parsed_url.hostname in ("localhost", "127.0.0.1", "::1")
+    if parsed_url.scheme != "https" and not (parsed_url.scheme == "http" and is_localhost):
+        raise RuntimeError("API requests must use HTTPS (HTTP is only allowed for localhost)")
     req = urllib.request.Request(url, headers={"Accept": "application/json", **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:

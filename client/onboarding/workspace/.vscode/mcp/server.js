@@ -9,7 +9,7 @@ import {
 import { execFileSync } from 'child_process';
 import http from 'http';
 import https from 'https';
-import { fileURLToPath, URL } from 'url';
+import { fileURLToPath, pathToFileURL, URL } from 'url';
 
 // ---------------------------------------------------------------------------
 // Configuration — set these in .vscode/mcp.json or as environment variables
@@ -50,8 +50,8 @@ function parseRemoteUrl(remoteUrl) {
     host: parsed.hostname,
     protocol: parsed.protocol.slice(0, -1),  // 'https' or 'http'
     origin: parsed.origin,
-    namespace: segments.slice(0, -1).join('/'),
-    orgUrl: `${parsed.origin}/${orgPath}`,
+    namespace: isAzureRemote ? segments.slice(0, gitIndex).join('/') : segments.slice(0, -1).join('/'),
+    orgUrl: isAzureRemote ? `${parsed.origin}/${orgPath}` : parsed.origin,
     project,
     repo,
     isAzureRemote,
@@ -104,6 +104,10 @@ function authHeader() {
 function apiGet(url, extraHeaders = {}) {
   return new Promise((resolve, reject) => {
     const parsed = new URL(url);
+    const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+    if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && isLocalhost)) {
+      return reject(new Error('API requests must use HTTPS (HTTP is only allowed for localhost)'));
+    }
     const transport = parsed.protocol === 'https:' ? https : http;
     const options = {
       hostname: parsed.hostname,
@@ -276,7 +280,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 export { parseRemoteUrl, interpolateTemplate };
 
-if (fileURLToPath(import.meta.url) === process.argv[1]) {
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   validateConfig();
   const transport = new StdioServerTransport();
   await server.connect(transport);

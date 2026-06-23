@@ -32,7 +32,7 @@ npm install
 cd -
 ```
 
-**Run all JS tests** from the repository root:
+**Run all JS tests** from the repository root (the `tests/server-js/package.json` declares `"type": "module"` so Node treats `.js` files as ESM):
 
 ```bash
 node --test tests/server-js/*.test.js
