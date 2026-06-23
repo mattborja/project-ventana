@@ -1,6 +1,6 @@
 # Project Ventana
 
-A proven agentic workflow framework that connects LLM agents to a shared enterprise knowledge base via a lightweight, stdio-based Model Context Protocol server — requiring no additional infrastructure beyond a Git repository and a Node.js runtime already present on each developer's machine.
+A proven agentic workflow framework that connects LLM agents to a shared enterprise knowledge base via a lightweight, stdio-based Model Context Protocol server — requiring no additional infrastructure beyond a Git repository and a runtime (Node.js or Python) already present on each developer's machine.
 
 > **Status: Development**
 >
@@ -106,7 +106,7 @@ The MCP server authenticates against the Git host using credentials cached by th
 
 Each developer's machine needs:
 
-- **Node.js 18 or later** — [nodejs.org](https://nodejs.org)
+- **Node.js 18 or later** (for `server.js`) — [nodejs.org](https://nodejs.org), **or Python 3.10 or later** (for `server.py`) — [python.org](https://www.python.org)
 - **Git** with **Git Credential Manager** — included with Git for Windows; install separately on macOS/Linux via `brew install git-credential-manager` or the [GCM releases page](https://github.com/git-ecosystem/git-credential-manager/releases)
 - **VS Code** — or another IDE with MCP server support
 
@@ -138,8 +138,8 @@ From the root of this repository:
   ```
 
 The script will:
-- Verify Node.js, npm, and Git prerequisites
-- Run `npm install` inside `client/onboarding/workspace/.vscode/mcp/`
+- Verify Git prerequisites and the appropriate runtime (Node.js/npm for `server.js`, or Python/pip for `server.py`)
+- Run `npm install` inside `client/onboarding/workspace/.vscode/mcp/` (if using `server.js`) or `pip install -r requirements.txt` (if using `server.py`)
 - Prompt for your Git remote URL and write it into `.vscode/mcp.json`
 - Trigger an initial GCM authentication against your Git host (a browser window or OS credential prompt may appear)
 
