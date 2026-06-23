@@ -40,7 +40,7 @@ function parseRemoteUrl(remoteUrl) {
   }
 
   const gitIndex = segments.lastIndexOf('_git');
-  const isAzureRemote = gitIndex >= 1 && gitIndex + 1 === segments.length - 1;
+  const isAzureRemote = gitIndex >= 2 && gitIndex + 1 === segments.length - 1;
   const orgPath = isAzureRemote ? segments.slice(0, gitIndex - 1).join('/') : '';
   const project = isAzureRemote ? segments[gitIndex - 1] : '';
 
@@ -134,28 +134,31 @@ function providerError(templateName) {
 }
 
 function interpolateTemplate(template, values) {
-  return template.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, (_, key) => {
+  const encodedKeys = new Set(['path', 'scopePath']);
+  return template.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, (_match, key) => {
     if (!(key in values)) {
       throw new Error(`Unknown URL template token: {${key}}`);
     }
-    return values[key];
+    const value = `${values[key]}`;
+    return encodedKeys.has(key) ? encodeURIComponent(value).replace(/%2F/g, '/') : value;
   });
 }
 
 // list — returns immediate children of a path
 async function listPath(scopePath = '/') {
   const coords = repoCoords();
-  const url = GIT_LIST_API_URL_TEMPLATE
-    ? interpolateTemplate(GIT_LIST_API_URL_TEMPLATE, { ...coords, scopePath, apiVersion: API_VER })
-    : coords.isAzureRemote
-      ? (() => {
-          const azureUrl = new URL(`${repoBase()}/items`);
-          azureUrl.searchParams.set('scopePath', scopePath);
-          azureUrl.searchParams.set('recursionLevel', 'OneLevel');
-          azureUrl.searchParams.set('api-version', API_VER);
-          return azureUrl.toString();
-        })()
-      : providerError('GIT_LIST_API_URL_TEMPLATE');
+  let url;
+  if (GIT_LIST_API_URL_TEMPLATE) {
+    url = interpolateTemplate(GIT_LIST_API_URL_TEMPLATE, { ...coords, scopePath, apiVersion: API_VER });
+  } else if (coords.isAzureRemote) {
+    const azureUrl = new URL(`${repoBase()}/items`);
+    azureUrl.searchParams.set('scopePath', scopePath);
+    azureUrl.searchParams.set('recursionLevel', 'OneLevel');
+    azureUrl.searchParams.set('api-version', API_VER);
+    url = azureUrl.toString();
+  } else {
+    providerError('GIT_LIST_API_URL_TEMPLATE');
+  }
 
   const { body } = await httpsGet(url, authHeader());
   const data = JSON.parse(body);
@@ -172,16 +175,17 @@ async function listPath(scopePath = '/') {
 // read — returns raw file content
 async function readPath(path) {
   const coords = repoCoords();
-  const url = GIT_READ_API_URL_TEMPLATE
-    ? interpolateTemplate(GIT_READ_API_URL_TEMPLATE, { ...coords, path, apiVersion: API_VER })
-    : coords.isAzureRemote
-      ? (() => {
-          const azureUrl = new URL(`${repoBase()}/items`);
-          azureUrl.searchParams.set('path', path);
-          azureUrl.searchParams.set('api-version', API_VER);
-          return azureUrl.toString();
-        })()
-      : providerError('GIT_READ_API_URL_TEMPLATE');
+  let url;
+  if (GIT_READ_API_URL_TEMPLATE) {
+    url = interpolateTemplate(GIT_READ_API_URL_TEMPLATE, { ...coords, path, apiVersion: API_VER });
+  } else if (coords.isAzureRemote) {
+    const azureUrl = new URL(`${repoBase()}/items`);
+    azureUrl.searchParams.set('path', path);
+    azureUrl.searchParams.set('api-version', API_VER);
+    url = azureUrl.toString();
+  } else {
+    providerError('GIT_READ_API_URL_TEMPLATE');
+  }
 
   const { body } = await httpsGet(url, {
     ...authHeader(),

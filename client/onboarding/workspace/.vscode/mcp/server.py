@@ -4,6 +4,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 import subprocess
 import urllib.error
 import urllib.parse
@@ -38,10 +39,14 @@ def parse_remote_url(remote_url: str) -> dict:
     if not repo:
         raise ValueError("GIT_REMOTE_URL must include a repository name")
 
-    git_index = len(segments) - 2 if len(segments) >= 2 and segments[-2] == "_git" else -1
-    is_azure_remote = git_index >= 1
-    org_path = "/".join(segments[: git_index - 1]) if is_azure_remote else ""
-    project = segments[git_index - 1] if is_azure_remote else ""
+    try:
+        git_segment_index = segments.index("_git")
+    except ValueError:
+        git_segment_index = -1
+    is_azure_remote = git_segment_index >= 2 and git_segment_index == len(segments) - 2
+    azure_git_index = git_segment_index if is_azure_remote else -1
+    org_path = "/".join(segments[: azure_git_index - 1]) if is_azure_remote else ""
+    project = segments[azure_git_index - 1] if is_azure_remote else ""
     return {
         "host": parsed.hostname,
         "origin": f"{parsed.scheme}://{parsed.netloc}",
@@ -124,13 +129,14 @@ def provider_error(template_name: str) -> None:
 
 
 def interpolate_template(template: str, values: dict[str, str]) -> str:
-    def replace(match: "re.Match[str]") -> str:
+    encoded_keys = {"path", "scopePath"}
+
+    def replace(match: re.Match[str]) -> str:
         key = match.group(1)
         if key not in values:
             raise RuntimeError(f"Unknown URL template token: {{{key}}}")
-        return str(values[key])
-
-    import re
+        value = str(values[key])
+        return urllib.parse.quote(value, safe="/") if key in encoded_keys else value
 
     return re.sub(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}", replace, template)
 
