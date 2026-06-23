@@ -280,7 +280,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 export { parseRemoteUrl, interpolateTemplate };
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   validateConfig();
   const transport = new StdioServerTransport();
   await server.connect(transport);
