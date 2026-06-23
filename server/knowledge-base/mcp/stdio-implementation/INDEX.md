@@ -22,7 +22,7 @@ The server is configured entirely through environment variables, supplied via `.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `GIT_HOST_URL` | Base URL of the Git host organization or account | `https://dev.azure.com/contoso` |
+| `GIT_HOST_URL` | Base URL of the Git host organization or account | `https://GIT_HOST_URL` |
 | `GIT_PROJECT` | Project or namespace within the host | `MyProject` |
 | `GIT_REPO` | Repository name within the project | `knowledge-base` |
 

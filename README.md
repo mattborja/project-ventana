@@ -69,7 +69,7 @@ The LLM agent accesses this repository over HTTPS via the MCP tools `list` and `
 5. Configure branch policies on `main`:
    - Require a pull request for all changes
    - Add designated approvers or a reviewer group for content governance
-6. Record the repository URL (`https://dev.azure.com/{org}/{project}/_git/{repo}`). Developers will need this during client setup.
+6. Record the repository URL as `GIT_REMOTE_URL` (for example, `https://git.example.com/your-namespace/your-repository`). Developers will need this during client setup.
 
 ### Extending the Knowledge Base
 
@@ -118,9 +118,9 @@ Open `client/onboarding/workspace/.vscode/mcp.json` and replace the placeholder 
 
 ```json
 "env": {
-  "GIT_HOST_URL": "https://dev.azure.com/YOUR_ORG",
-  "GIT_PROJECT": "YOUR_PROJECT",
-  "GIT_REPO": "YOUR_REPO"
+  "GIT_HOST_URL": "https://GIT_HOST_URL",
+  "GIT_PROJECT": "GIT_PROJECT",
+  "GIT_REPO": "GIT_REPO"
 }
 ```
 
@@ -175,7 +175,7 @@ If the agent responds without invoking the MCP tool, check that:
 - `.vscode/mcp.json` is present in the workspace root
 - The `ventana-kb` server shows as active (not errored) in the MCP panel
 - The `GIT_HOST_URL`, `GIT_PROJECT`, and `GIT_REPO` values in `mcp.json` match the repository deployed in Part 1
-- GCM has a cached credential for the Azure DevOps host (`git credential fill` should return a password without prompting)
+- GCM has a cached credential for the configured Git host (`git credential fill` should return a password without prompting)
 
 ---
 

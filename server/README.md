@@ -106,7 +106,7 @@ Confirm the repository root now contains `INDEX.md` and `RULES.md` alongside the
 
 Give each developer the following three values so they can run the client onboarding script:
 
-- **Git host URL** — e.g., `https://dev.azure.com/your-org`
+- **Git host URL** — token `GIT_HOST_URL` (e.g., `https://git.example.com/your-namespace`)
 - **Project name** — the project or namespace containing the repo
 - **Repository name** — the repo name you just pushed to
 

@@ -42,7 +42,7 @@ echo "Configure your knowledge base connection."
 echo "These values will be written into workspace/.vscode/mcp.json."
 echo ""
 
-read -rp "  Git host URL (e.g. https://dev.azure.com/contoso): " HOST_URL
+read -rp "  Git host URL (token: GIT_HOST_URL, e.g. https://git.example.com/your-namespace): " HOST_URL
 read -rp "  Project name: "                                         PROJECT
 read -rp "  Repository name: "                                      REPO_NAME
 
@@ -86,5 +86,6 @@ echo "  3. The ventana-kb MCP server will appear in the MCP panel."
 echo "  4. Open a Copilot or Claude chat and ask a question — the agent"
 echo "     will consult the knowledge base automatically."
 echo ""
-echo "Knowledge base: $HOST_URL/$PROJECT/_git/$REPO_NAME"
+echo "Knowledge base tokens: GIT_HOST_URL=$HOST_URL, GIT_PROJECT=$PROJECT, GIT_REPO=$REPO_NAME"
+echo "Knowledge base remote token: GIT_REMOTE_URL"
 echo ""
