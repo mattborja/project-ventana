@@ -1,4 +1,4 @@
-# Project Ventana — Claude Code Instructions
+# Knowledge Base Workspace — Claude Code Instructions
 
 This workspace is connected to a knowledge base repository via the **ventana-kb** MCP server.
 

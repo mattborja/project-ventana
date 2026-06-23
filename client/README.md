@@ -6,7 +6,7 @@
 
 ## What This Directory Is
 
-The `client/` directory contains everything needed to connect a **developer's workstation** to the shared knowledge base. This is a per-person setup — each developer runs the onboarding script once on their own machine. There is no shared infrastructure to configure here; the shared piece is the KB repository (see `server/README.md`).
+The `client/` directory contains everything needed to connect a **developer's workstation** to the shared knowledge base. This is a per-person setup — each developer runs the onboarding script once on their own machine. There is no shared infrastructure to configure here; the shared piece is the KB repository (see the root `README.md`, Part 1).
 
 When onboarding is complete, the developer's IDE will have a running MCP server that gives connected AI agents (Claude Code, GitHub Copilot, etc.) direct read access to the knowledge base over HTTPS, using credentials already stored in the developer's git credential helper.
 

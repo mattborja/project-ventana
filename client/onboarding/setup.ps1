@@ -1,4 +1,8 @@
 #Requires -Version 5.1
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Matt Borja
+# See the repository root LICENSE file for the full license text.
+#
 <#
 .SYNOPSIS
     Project Ventana — Developer Onboarding (Windows / PowerShell)

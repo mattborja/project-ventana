@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Matt Borja
+# See the repository root LICENSE file for the full license text.
 
 import asyncio
 import base64
@@ -264,7 +267,7 @@ async def handle_list_tools() -> list[Tool]:
                 "properties": {
                     "path": {
                         "type": "string",
-                        "description": "Repository path of the file to read (e.g. '/INDEX.md' or '/knowledge-base/mcp/RULES.md').",
+                        "description": "Repository path of the file to read (e.g. '/INDEX.md' or '/knowledge-base/<domain>/RULES.md').",
                     }
                 },
                 "required": ["path"],

@@ -39,21 +39,14 @@ Neither component depends on the other at the file-system level. `server/` is de
 
 ### What Gets Deployed
 
-The `server/` directory becomes the root of a dedicated Git repository on your chosen host (GitHub, Azure Repos, Bitbucket, Gitea, etc.). When deployed, its contents are:
+The `server/` directory is a **clean starter template** for a dedicated knowledge base repository on your chosen host (GitHub, Azure Repos, Bitbucket, Gitea, etc.). It intentionally ships without framework-specific domain content so teams can populate it only with their own authoritative knowledge. When deployed, the initial contents are:
 
 ```
-/INDEX.md                          ← Agent reads this first on every session
-/RULES.md                          ← Global rules the agent must follow
-/knowledge-base/
-  mcp/
-    INDEX.md                       ← Domain index
-    RULES.md                       ← Domain rules
-    stdio-implementation/
-      INDEX.md                     ← Subdomain index
-      RULES.md                     ← Subdomain rules
+/INDEX.md                          ← Starter root index; replace placeholder content
+/RULES.md                          ← Starter global rules; customize as needed
 ```
 
-The LLM agent accesses this repository over HTTPS via the MCP tools `list` and `read`. It never clones the repository — every connection retrieves the latest committed state directly from the remote.
+You then add your own domain folders under `/knowledge-base/` and update `/INDEX.md` to match. The LLM agent accesses this repository over HTTPS via the MCP tools `list` and `read`. It never clones the repository — every connection retrieves the latest committed state directly from the remote.
 
 ### Prerequisites
 
@@ -66,18 +59,19 @@ The LLM agent accesses this repository over HTTPS via the MCP tools `list` and `
 
 1. On your Git host, create a new repository (e.g., `knowledge-base`).
 2. Copy the **contents** of `server/` — not the `server/` folder itself — into the root of that new repository.
-3. Commit and push to the `main` branch.
-4. Configure repository permissions:
+3. Replace the placeholder text in `INDEX.md` and `RULES.md`, then add your first domain under `/knowledge-base/`.
+4. Commit and push to the `main` branch.
+5. Configure repository permissions:
    - Knowledge base maintainers: **write** access
    - Consuming developers: **read-only** access (prevents unauthorized edits)
-5. Configure branch policies on `main`:
+6. Configure branch policies on `main`:
    - Require a pull request for all changes
    - Add designated approvers or a reviewer group for content governance
-6. Record the repository URL as `GIT_REMOTE_URL` (for example, `https://github.com/your-org/knowledge-base.git` or `https://dev.azure.com/your-org/your-project/_git/knowledge-base`). Developers will need this during client setup.
+7. Record the repository URL as `GIT_REMOTE_URL` (for example, `https://github.com/your-org/knowledge-base.git` or `https://dev.azure.com/your-org/your-project/_git/knowledge-base`). Developers will need this during client setup.
 
 ### Extending the Knowledge Base
 
-To add a new domain of knowledge:
+The starter template intentionally includes **no preloaded framework domains**. To add a new domain of knowledge:
 
 1. Create a directory at `/knowledge-base/{domain-name}/`
 2. Add `INDEX.md` (describe what the domain contains) and `RULES.md` (rules specific to this domain) at the domain root

@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Matt Borja
+# See the repository root LICENSE file for the full license text.
+
 """Tests for parse_remote_url in server.py.
 
 The mcp package is mocked so that the test suite can run without it being

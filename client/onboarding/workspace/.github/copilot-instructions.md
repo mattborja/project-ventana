@@ -1,4 +1,4 @@
-# Project Ventana — GitHub Copilot Instructions
+# Knowledge Base Workspace — GitHub Copilot Instructions
 
 This workspace is connected to a knowledge base repository via the **ventana-kb** MCP server.
 
