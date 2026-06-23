@@ -9,6 +9,7 @@ import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
+from typing import NoReturn
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -27,9 +28,10 @@ REPOSITORY_INFO: dict | None = None
 def parse_remote_url(remote_url: str) -> dict:
     parsed = urllib.parse.urlparse(remote_url)
     if not parsed.scheme or not parsed.netloc:
-        raise ValueError("GIT_REMOTE_URL must be a valid HTTPS remote URL")
-    if parsed.scheme != "https":
-        raise ValueError("GIT_REMOTE_URL must use HTTPS")
+        raise ValueError("GIT_REMOTE_URL must be a valid URL")
+    is_localhost = parsed.hostname in ("localhost", "127.0.0.1", "::1")
+    if parsed.scheme != "https" and not (parsed.scheme == "http" and is_localhost):
+        raise ValueError("GIT_REMOTE_URL must use HTTPS (HTTP is only allowed for localhost)")
 
     segments = [segment for segment in parsed.path.split("/") if segment]
     if not segments:
@@ -49,6 +51,7 @@ def parse_remote_url(remote_url: str) -> dict:
     project = segments[azure_git_index - 1] if is_azure_remote else ""
     return {
         "host": parsed.hostname,
+        "protocol": parsed.scheme,  # 'https' or 'http'
         "origin": f"{parsed.scheme}://{parsed.netloc}",
         "namespace": "/".join(segments[:-1]),
         "org_url": f"{parsed.scheme}://{parsed.netloc}/{org_path}",
@@ -77,10 +80,10 @@ def validate_config() -> None:
 # ---------------------------------------------------------------------------
 # Git credential helper — retrieves cached credential
 # ---------------------------------------------------------------------------
-def get_git_credential(host: str) -> str:
+def get_git_credential(host: str, protocol: str) -> str:
     result = subprocess.run(
         ["git", "credential", "fill"],
-        input=f"protocol=https\nhost={host}\n\n",
+        input=f"protocol={protocol}\nhost={host}\n\n",
         capture_output=True,
         text=True,
         timeout=15,
@@ -95,7 +98,8 @@ def get_git_credential(host: str) -> str:
 
 
 def auth_header() -> dict:
-    token = get_git_credential(repository_info()["host"])
+    info = repository_info()
+    token = get_git_credential(info["host"], info["protocol"])
     encoded = base64.b64encode(f":{token}".encode()).decode()
     return {"Authorization": f"Basic {encoded}"}
 
@@ -103,7 +107,7 @@ def auth_header() -> dict:
 # ---------------------------------------------------------------------------
 # Git host REST helpers
 # ---------------------------------------------------------------------------
-def https_get(url: str, headers: dict | None = None) -> bytes:
+def api_get(url: str, headers: dict | None = None) -> bytes:
     req = urllib.request.Request(url, headers={"Accept": "application/json", **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -122,7 +126,7 @@ def repo_base() -> str:
     )
 
 
-def provider_error(template_name: str) -> None:
+def provider_error(template_name: str) -> NoReturn:
     raise RuntimeError(
         f"No default API mapping found for this remote URL. Set {template_name} for your Git provider."
     )
@@ -158,7 +162,7 @@ def list_path(scope_path: str = "/") -> list[dict]:
     else:
         provider_error("GIT_LIST_API_URL_TEMPLATE")
 
-    body = https_get(url, auth_header())
+    body = api_get(url, auth_header())
     data = json.loads(body)
     return [
         {"path": item["path"], "type": "folder" if item.get("isFolder") else "file"}
@@ -180,7 +184,7 @@ def read_path(path: str) -> str:
     else:
         provider_error("GIT_READ_API_URL_TEMPLATE")
 
-    body = https_get(url, {**auth_header(), "Accept": "application/octet-stream"})
+    body = api_get(url, {**auth_header(), "Accept": "application/octet-stream"})
     return body.decode("utf-8")
 
 

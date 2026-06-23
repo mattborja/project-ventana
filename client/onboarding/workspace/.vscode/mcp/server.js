@@ -7,6 +7,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { execFileSync } from 'child_process';
+import http from 'http';
 import https from 'https';
 import { URL } from 'url';
 
@@ -25,8 +26,9 @@ function parseRemoteUrl(remoteUrl) {
   } catch {
     throw new Error('GIT_REMOTE_URL must be a valid HTTPS remote URL');
   }
-  if (parsed.protocol !== 'https:') {
-    throw new Error('GIT_REMOTE_URL must use HTTPS');
+  const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+  if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && isLocalhost)) {
+    throw new Error('GIT_REMOTE_URL must use HTTPS (HTTP is only allowed for localhost)');
   }
 
   const segments = parsed.pathname.split('/').filter(Boolean);
@@ -46,6 +48,7 @@ function parseRemoteUrl(remoteUrl) {
 
   return {
     host: parsed.hostname,
+    protocol: parsed.protocol.slice(0, -1),  // 'https' or 'http'
     origin: parsed.origin,
     namespace: segments.slice(0, -1).join('/'),
     orgUrl: `${parsed.origin}/${orgPath}`,
@@ -73,8 +76,8 @@ function validateConfig() {
 // ---------------------------------------------------------------------------
 // Git credential helper — retrieves cached credential
 // ---------------------------------------------------------------------------
-function getGcmCredential(host) {
-  const input = `protocol=https\nhost=${host}\n\n`;
+function getGcmCredential(host, protocol) {
+  const input = `protocol=${protocol}\nhost=${host}\n\n`;
   try {
     const out = execFileSync('git', ['credential', 'fill'], {
       input,
@@ -90,23 +93,27 @@ function getGcmCredential(host) {
 }
 
 function authHeader() {
-  const token = getGcmCredential(repositoryInfo().host);
+  const { host, protocol } = repositoryInfo();
+  const token = getGcmCredential(host, protocol);
   return { Authorization: `Basic ${Buffer.from(`:${token}`).toString('base64')}` };
 }
 
 // ---------------------------------------------------------------------------
 // Git host REST helpers
 // ---------------------------------------------------------------------------
-function httpsGet(url, extraHeaders = {}) {
+function apiGet(url, extraHeaders = {}) {
   return new Promise((resolve, reject) => {
     const parsed = new URL(url);
-    const req = https.request(
-      {
-        hostname: parsed.hostname,
-        path: parsed.pathname + parsed.search,
-        method: 'GET',
-        headers: { Accept: 'application/json', ...extraHeaders },
-      },
+    const transport = parsed.protocol === 'https:' ? https : http;
+    const options = {
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      method: 'GET',
+      headers: { Accept: 'application/json', ...extraHeaders },
+    };
+    if (parsed.port) options.port = parseInt(parsed.port, 10);
+    const req = transport.request(
+      options,
       (res) => {
         const chunks = [];
         res.on('data', c => chunks.push(c));
@@ -160,7 +167,7 @@ async function listPath(scopePath = '/') {
     providerError('GIT_LIST_API_URL_TEMPLATE');
   }
 
-  const { body } = await httpsGet(url, authHeader());
+  const { body } = await apiGet(url, authHeader());
   const data = JSON.parse(body);
 
   return (data.value ?? [])
@@ -187,7 +194,7 @@ async function readPath(path) {
     providerError('GIT_READ_API_URL_TEMPLATE');
   }
 
-  const { body } = await httpsGet(url, {
+  const { body } = await apiGet(url, {
     ...authHeader(),
     Accept: 'application/octet-stream',
   });
